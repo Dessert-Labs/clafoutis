@@ -44,8 +44,18 @@ interface FileToCreate {
 /**
  * Main init command handler.
  * Supports both interactive wizard and non-interactive CLI flag modes.
+ * @throws ClafoutisError if both --producer and --consumer flags are set
  */
 export async function initCommand(options: InitOptions): Promise<void> {
+  // Reject ambiguous flag combinations early
+  if (options.producer && options.consumer) {
+    throw new ClafoutisError(
+      'Conflicting flags',
+      'Cannot specify both --producer and --consumer',
+      'Choose one: --producer for design system repos, --consumer for application repos'
+    );
+  }
+
   const isInteractive = !options.nonInteractive && process.stdin.isTTY;
   const isDryRun = options.dryRun ?? false;
 

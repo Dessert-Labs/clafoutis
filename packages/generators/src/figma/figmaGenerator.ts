@@ -196,7 +196,7 @@ function getFigmaVariableType(tokenType: string): string {
 async function main(): Promise<void> {
   cleanDist();
 
-  const sourceFiles = ['tokens/**/*.json', '!tokens/**/*.dark.json'];
+  const sourceFiles = ['tokens/**/*.json'];
 
   const SD = new StyleDictionary({
     source: sourceFiles,
@@ -231,10 +231,23 @@ async function main(): Promise<void> {
     transform: (token: DesignToken) => {
       const ref = token.original.$value.slice(1, -1); // Remove { and }
       const parts = ref.split('.');
-      const resolvedToken = SD.tokens[parts.join('.')];
-      return resolvedToken
-        ? resolvedToken.original.$value
-        : token.original.$value;
+
+      // Deep traversal to find nested token
+      let resolvedToken: DesignToken | undefined = SD.tokens as DesignToken;
+      for (const part of parts) {
+        if (
+          resolvedToken &&
+          typeof resolvedToken === 'object' &&
+          part in resolvedToken
+        ) {
+          resolvedToken = (resolvedToken as Record<string, DesignToken>)[part];
+        } else {
+          resolvedToken = undefined;
+          break;
+        }
+      }
+
+      return resolvedToken?.original?.$value ?? token.original.$value;
     },
   } as ValueTransform);
 

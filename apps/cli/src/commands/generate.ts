@@ -79,12 +79,14 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
 
   validateProducerConfig(config);
 
-  if (options.tailwind || options.figma) {
+  // Merge CLI flags with existing generators, preserving custom plugins
+  if (options.tailwind !== undefined || options.figma !== undefined) {
     config = {
       ...config,
       generators: {
-        tailwind: options.tailwind || false,
-        figma: options.figma || false,
+        ...(config.generators || {}),
+        ...(options.tailwind !== undefined && { tailwind: options.tailwind }),
+        ...(options.figma !== undefined && { figma: options.figma }),
       },
     };
   }
