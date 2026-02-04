@@ -172,7 +172,7 @@ function isValidJSKey(key: string): boolean {
  */
 function toJSLiteral(value: any, indent = 2): string {
   if (typeof value === "string") {
-    return `"${value}"`;
+    return JSON.stringify(value);
   }
   if (Array.isArray(value)) {
     const arrContent = value.map((v) => toJSLiteral(v, indent + 2)).join(", ");
@@ -183,7 +183,7 @@ function toJSLiteral(value: any, indent = 2): string {
     let result = "{\n";
     const entries = Object.entries(value);
     entries.forEach(([k, v], index) => {
-      const keyName = isValidJSKey(k) ? k : `"${k}"`;
+      const keyName = isValidJSKey(k) ? k : JSON.stringify(k);
       result += `${spaces}${keyName}: ${toJSLiteral(v, indent + 2)}`;
       if (index < entries.length - 1) {
         result += ",";

@@ -217,7 +217,7 @@ In CI:
 
 ## Token Format
 
-Clafoutis uses the [Design Tokens Community Group (DTCG)](https://tr.designtokens.org/) specification:
+Clafoutis uses the [Design Tokens Community Group (DTCG)](https://www.designtokens.org/tr/2025.10/) specification:
 
 ```json
 {
