@@ -8,23 +8,30 @@ import {
 } from './errors.js';
 
 interface GitHubRelease {
+  tag_name: string;
   assets: Array<{
     name: string;
     browser_download_url: string;
   }>;
 }
 
+export interface DownloadResult {
+  files: Map<string, string>;
+  resolvedTag: string;
+}
+
 /**
  * Downloads release assets from a GitHub repository.
  * Fetches the release metadata and then downloads each requested file.
+ * Handles "latest" version by resolving to the actual tag name.
  *
  * @param config - Consumer configuration containing repo, version, and files to download
- * @returns Map of filename to file content
+ * @returns Object containing downloaded files and the resolved tag name
  * @throws ClafoutisError if any requested assets are missing or fail to download
  */
 export async function downloadRelease(
   config: ClafoutisConfig
-): Promise<Map<string, string>> {
+): Promise<DownloadResult> {
   const token = process.env.CLAFOUTIS_REPO_TOKEN;
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github.v3+json',
@@ -35,7 +42,12 @@ export async function downloadRelease(
     headers['Authorization'] = `token ${token}`;
   }
 
-  const releaseUrl = `https://api.github.com/repos/${config.repo}/releases/tags/${config.version}`;
+  // Use /releases/latest endpoint for "latest", otherwise use /releases/tags/{tag}
+  const isLatest = config.version === 'latest';
+  const releaseUrl = isLatest
+    ? `https://api.github.com/repos/${config.repo}/releases/latest`
+    : `https://api.github.com/repos/${config.repo}/releases/tags/${config.version}`;
+
   const releaseRes = await fetch(releaseUrl, { headers });
 
   if (!releaseRes.ok) {
@@ -50,6 +62,11 @@ export async function downloadRelease(
   }
 
   const release = (await releaseRes.json()) as GitHubRelease;
+  const resolvedTag = release.tag_name;
+
+  if (isLatest) {
+    logger.info(`Resolved "latest" to ${resolvedTag}`);
+  }
   const files = new Map<string, string>();
   const missingAssets: string[] = [];
   const failedDownloads: string[] = [];
@@ -90,9 +107,9 @@ export async function downloadRelease(
     throw new ClafoutisError(
       'Download failed',
       errors.join('\n'),
-      `Available assets in ${config.version}: ${availableAssets || 'none'}`
+      `Available assets in ${resolvedTag}: ${availableAssets || 'none'}`
     );
   }
 
-  return files;
+  return { files, resolvedTag };
 }

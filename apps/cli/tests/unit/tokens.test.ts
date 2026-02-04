@@ -56,6 +56,7 @@ describe('typographyPrimitives', () => {
 describe('starterTokens', () => {
   it('contains all token file paths', () => {
     expect(starterTokens['colors/primitives.json']).toBeDefined();
+    expect(starterTokens['colors/primitives.dark.json']).toBeDefined();
     expect(starterTokens['spacing/primitives.json']).toBeDefined();
     expect(starterTokens['typography/primitives.json']).toBeDefined();
   });
@@ -79,7 +80,7 @@ describe('getStarterTokenContent', () => {
 describe('getAllStarterTokens', () => {
   it('returns all token files with paths and content', () => {
     const tokens = getAllStarterTokens();
-    expect(tokens).toHaveLength(3);
+    expect(tokens).toHaveLength(4);
 
     for (const token of tokens) {
       expect(token.path).toBeDefined();
@@ -92,6 +93,7 @@ describe('getAllStarterTokens', () => {
     const tokens = getAllStarterTokens();
     const paths = tokens.map(t => t.path);
     expect(paths).toContain('colors/primitives.json');
+    expect(paths).toContain('colors/primitives.dark.json');
     expect(paths).toContain('spacing/primitives.json');
     expect(paths).toContain('typography/primitives.json');
   });

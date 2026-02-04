@@ -47,19 +47,6 @@ describe('Producer E2E', () => {
   it('generate creates output files from tokens', async () => {
     execSync(`node ${cliBin} init --producer`, { cwd: tempDir, stdio: 'pipe' });
 
-    const config = {
-      tokens: './tokens',
-      output: './build',
-      generators: {
-        tailwind: true,
-      },
-    };
-    await fs.mkdir(path.join(tempDir, '.clafoutis'), { recursive: true });
-    await fs.writeFile(
-      path.join(tempDir, '.clafoutis', 'producer.json'),
-      JSON.stringify(config, null, 2)
-    );
-
     execSync(`node ${cliBin} generate`, { cwd: tempDir, stdio: 'pipe' });
 
     const buildExists = await fileExists(path.join(tempDir, 'build'));

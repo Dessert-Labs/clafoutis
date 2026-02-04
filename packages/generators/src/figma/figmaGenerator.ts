@@ -76,7 +76,7 @@ StyleDictionary.registerTransform({
   filter: (token: DesignToken) => token.$type === 'dimension',
   transform: (token: DesignToken): number => {
     const value = token.$value;
-    if (!value) {
+    if (value === null || value === undefined) {
       logger.warn(`No dimension value found for token: ${token.name}`);
       return 0;
     }
@@ -209,7 +209,8 @@ async function main(): Promise<void> {
             destination: 'variables.json',
             format: 'figma/variables',
             options: {
-              outputReferences: true,
+              // Resolve all references to final values since Figma uses concrete values, not variable references
+              outputReferences: false,
             },
           },
         ],

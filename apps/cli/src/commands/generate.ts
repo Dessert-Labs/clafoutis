@@ -31,6 +31,7 @@ interface GeneratorModule {
 /**
  * Loads a generator plugin from a file path.
  * Supports both JavaScript and TypeScript files.
+ * Resolves relative paths against the current working directory.
  */
 async function loadPlugin(pluginPath: string): Promise<GeneratorModule> {
   const absolutePath = path.resolve(process.cwd(), pluginPath);
@@ -95,6 +96,7 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     config.output = options.output;
   }
 
+  // Resolve paths relative to current working directory (project root)
   const tokensDir = path.resolve(process.cwd(), config.tokens || './tokens');
   const outputDir = path.resolve(process.cwd(), config.output || './build');
 
@@ -102,10 +104,13 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     throw tokensDirNotFoundError(tokensDir);
   }
 
+  // Use the same default for both dry-run and actual execution
+  const generators = config.generators || { tailwind: true, figma: true };
+
   if (options.dryRun) {
     logger.info('[dry-run] Would read tokens from: ' + tokensDir);
     logger.info('[dry-run] Would write to: ' + outputDir);
-    for (const [name, value] of Object.entries(config.generators)) {
+    for (const [name, value] of Object.entries(generators)) {
       if (value !== false) {
         const type = typeof value === 'string' ? 'custom' : 'built-in';
         logger.info(`[dry-run] Would run generator: ${name} (${type})`);
@@ -117,7 +122,6 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
   logger.info(`Tokens: ${tokensDir}`);
   logger.info(`Output: ${outputDir}`);
 
-  const generators = config.generators || { tailwind: true, figma: true };
   let hadFailure = false;
 
   for (const [name, value] of Object.entries(generators)) {

@@ -33,6 +33,7 @@ describe('syncCommand', () => {
     await fs.writeFile('.clafoutis/consumer.json', JSON.stringify(config));
 
     const mockRelease = {
+      tag_name: 'v1.0.0',
       assets: [
         {
           name: '_colors.scss',
@@ -91,6 +92,7 @@ describe('syncCommand', () => {
     await fs.writeFile('src/tokens/_colors.scss', 'existing content');
 
     const mockRelease = {
+      tag_name: 'v1.0.0',
       assets: [
         {
           name: '_colors.scss',
@@ -148,6 +150,7 @@ describe('syncCommand', () => {
     await fs.writeFile('.clafoutis/consumer.json', JSON.stringify(config));
 
     const mockRelease = {
+      tag_name: 'v1.0.0',
       assets: [
         {
           name: '_colors.scss',
@@ -185,6 +188,7 @@ describe('syncCommand', () => {
     await fs.writeFile('.clafoutis/consumer.json', JSON.stringify(config));
 
     const mockRelease = {
+      tag_name: 'v1.0.0',
       assets: [
         {
           name: '_colors.scss',

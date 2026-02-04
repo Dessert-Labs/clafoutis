@@ -41,6 +41,33 @@ export const colorPrimitives = {
 };
 
 /**
+ * Dark mode color overrides.
+ * Uses the `.dark.json` suffix so the Figma generator places these in the Dark collection.
+ * Semantic colors reference the inverted neutral scale for proper dark mode contrast.
+ */
+export const colorDarkPrimitives = {
+  color: {
+    // Background colors - use lighter neutrals in dark mode
+    background: {
+      default: { $value: '{color.neutral.900}' },
+      subtle: { $value: '{color.neutral.800}' },
+      muted: { $value: '{color.neutral.700}' },
+    },
+    // Foreground/text colors - use darker neutrals (which are lighter) in dark mode
+    foreground: {
+      default: { $value: '{color.neutral.50}' },
+      muted: { $value: '{color.neutral.400}' },
+      subtle: { $value: '{color.neutral.500}' },
+    },
+    // Border colors
+    border: {
+      default: { $value: '{color.neutral.700}' },
+      muted: { $value: '{color.neutral.800}' },
+    },
+  },
+};
+
+/**
  * Starter spacing scale following a 4px base grid.
  * Values use rem for accessibility (respects user font size preferences).
  */
@@ -98,9 +125,11 @@ export const typographyPrimitives = {
 /**
  * Map of all starter token files to their content.
  * Keys are relative paths within the tokens directory.
+ * Note: `.dark.json` suffix is required for dark mode tokens to be recognized by generators.
  */
 export const starterTokens = {
   'colors/primitives.json': colorPrimitives,
+  'colors/primitives.dark.json': colorDarkPrimitives,
   'spacing/primitives.json': spacingPrimitives,
   'typography/primitives.json': typographyPrimitives,
 };

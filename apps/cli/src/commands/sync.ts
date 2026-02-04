@@ -26,8 +26,10 @@ async function writeOutput(
   files: Map<string, string>
 ): Promise<void> {
   for (const [assetName, content] of files) {
-    const outputPath = config.files[assetName];
-    if (!outputPath) continue;
+    const configPath = config.files[assetName];
+    if (!configPath) continue;
+
+    const outputPath = path.resolve(process.cwd(), configPath);
 
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await fs.writeFile(outputPath, content);
@@ -71,6 +73,7 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
   validateConsumerConfig(config);
 
   const cachedVersion = await readCache();
+  const isLatest = config.version === 'latest';
 
   logger.info(`Repo: ${config.repo}`);
   logger.info(`Pinned: ${config.version}`);
@@ -86,8 +89,11 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
     return;
   }
 
-  if (!options.force && config.version === cachedVersion) {
-    const outputPaths = Object.values(config.files);
+  const resolveOutputPaths = () =>
+    Object.values(config.files).map(p => path.resolve(process.cwd(), p));
+
+  if (!isLatest && !options.force && config.version === cachedVersion) {
+    const outputPaths = resolveOutputPaths();
     const existsResults = await Promise.all(
       outputPaths.map(p => fileExists(p))
     );
@@ -100,13 +106,27 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
 
   logger.warn(`Syncing ${config.version}...`);
 
-  const files = await downloadRelease(config);
+  const { files, resolvedTag } = await downloadRelease(config);
+
+  // For "latest", check if we already have this resolved version cached
+  if (isLatest && !options.force && resolvedTag === cachedVersion) {
+    const outputPaths = resolveOutputPaths();
+    const existsResults = await Promise.all(
+      outputPaths.map(p => fileExists(p))
+    );
+    const allOutputsExist = existsResults.every(exists => exists);
+    if (allOutputsExist) {
+      logger.success(`Already at ${resolvedTag} (latest) - no sync needed`);
+      return;
+    }
+  }
 
   await writeOutput(config, files);
 
-  await writeCache(config.version);
+  // Cache the resolved tag, not "latest"
+  await writeCache(resolvedTag);
 
-  logger.success(`Synced to ${config.version}`);
+  logger.success(`Synced to ${resolvedTag}`);
 
   if (config.postSync) {
     await runPostSync(config.postSync);

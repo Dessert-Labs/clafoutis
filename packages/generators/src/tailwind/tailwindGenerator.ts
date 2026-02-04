@@ -400,12 +400,12 @@ async function main(): Promise<void> {
     logger.success('Base theme built!');
   }
 
-  // Dark styles
+  // Dark styles - include all tokens for reference resolution, but filter output to dark tokens only
   {
     console.log('Building dark theme...');
     const SD = new StyleDictionary({
       source: [
-        'tokens/**/*(*.dark).json', // only dark files
+        'tokens/**/*.json', // Include all tokens for reference resolution
       ],
       log: { verbosity: 'verbose' },
       platforms: {
@@ -417,6 +417,7 @@ async function main(): Promise<void> {
             {
               destination: 'dark.css',
               format: 'css/variables',
+              filter: token => token.filePath.includes('.dark.json'), // Only output dark tokens
               options: {
                 fileHeader: 'doNotEditWarningHeader',
                 selector: '.dark',

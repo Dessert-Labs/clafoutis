@@ -27,7 +27,7 @@ export function validatePath(value: string | undefined): string | undefined {
     return 'Path is required';
   }
   if (!value.startsWith('./') && !value.startsWith('/') && value !== '.') {
-    return 'Path must start with ./ or /';
+    return 'Path must start with ./ or /, or be "."';
   }
   return undefined;
 }
@@ -180,12 +180,29 @@ export function validateProducerFlags(options: {
   }
 
   if (options.generators) {
-    const validGenerators = ['tailwind', 'figma', 'custom'];
+    const builtInGenerators = ['tailwind', 'figma'];
     const generators = options.generators.split(',').map(g => g.trim());
     for (const gen of generators) {
-      if (!validGenerators.includes(gen)) {
+      // Check if it's a custom generator with path (name:path format)
+      const colonIdx = gen.indexOf(':');
+      if (colonIdx > 0) {
+        // Custom generator: validate name and path are non-empty
+        const name = gen.slice(0, colonIdx).trim();
+        const pluginPath = gen.slice(colonIdx + 1).trim();
+        if (!name) {
+          errors.push(
+            `--generators: Custom generator "${gen}" has an empty name`
+          );
+        }
+        if (!pluginPath) {
+          errors.push(
+            `--generators: Custom generator "${name}" is missing a path`
+          );
+        }
+      } else if (!builtInGenerators.includes(gen)) {
+        // Not a built-in generator and not in name:path format
         errors.push(
-          `--generators: Invalid generator "${gen}". Valid options: ${validGenerators.join(', ')}`
+          `--generators: Invalid generator "${gen}". Built-in options: ${builtInGenerators.join(', ')}. For custom generators use "name:./path/to/plugin.js"`
         );
       }
     }

@@ -60,8 +60,12 @@ describe('validatePath', () => {
   });
 
   it('returns error for invalid paths', () => {
-    expect(validatePath('relative/path')).toBe('Path must start with ./ or /');
-    expect(validatePath('tokens')).toBe('Path must start with ./ or /');
+    expect(validatePath('relative/path')).toBe(
+      'Path must start with ./ or /, or be "."'
+    );
+    expect(validatePath('tokens')).toBe(
+      'Path must start with ./ or /, or be "."'
+    );
   });
 });
 

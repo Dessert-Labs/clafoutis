@@ -161,10 +161,35 @@ async function runNonInteractiveInit(
     const files: Record<string, string> = {};
     if (options.files) {
       for (const mapping of options.files.split(',')) {
-        const [source, dest] = mapping.split(':').map(s => s.trim());
-        if (source && dest) {
-          files[source] = dest;
+        const colonIdx = mapping.indexOf(':');
+        if (colonIdx === -1) {
+          throw new ClafoutisError(
+            'Invalid file mapping',
+            `Mapping "${mapping.trim()}" is missing a colon separator`,
+            'Use the format "source:destination" (e.g., "tokens.css:./src/styles/tokens.css")'
+          );
         }
+
+        const source = mapping.slice(0, colonIdx).trim();
+        const dest = mapping.slice(colonIdx + 1).trim();
+
+        if (!source) {
+          throw new ClafoutisError(
+            'Invalid file mapping',
+            `Mapping "${mapping.trim()}" has an empty source`,
+            'Provide a valid asset name before the colon (e.g., "tokens.css:./path")'
+          );
+        }
+
+        if (!dest) {
+          throw new ClafoutisError(
+            'Invalid file mapping',
+            `Mapping "${mapping.trim()}" has an empty destination`,
+            'Provide a valid path after the colon (e.g., "tokens.css:./path")'
+          );
+        }
+
+        files[source] = dest;
       }
     } else {
       files['tailwind.base.css'] = './src/styles/base.css';
@@ -195,13 +220,30 @@ async function createProducerConfig(
     );
   }
 
+  // Build generators object from answers.generators array
+  // Each entry can be:
+  // - "tailwind" or "figma" → sets generators[name] = true
+  // - "name:path" → sets generators[name] = path (custom plugin)
+  const generators: Record<string, boolean | string> = {};
+  for (const entry of answers.generators) {
+    const colonIdx = entry.indexOf(':');
+    if (colonIdx > 0) {
+      // Custom generator with path: "custom:./path/to/plugin.js"
+      const name = entry.slice(0, colonIdx).trim();
+      const pluginPath = entry.slice(colonIdx + 1).trim();
+      if (name && pluginPath) {
+        generators[name] = pluginPath;
+      }
+    } else {
+      // Built-in generator: "tailwind" or "figma"
+      generators[entry] = true;
+    }
+  }
+
   const config = {
     tokens: answers.tokens,
     output: answers.output,
-    generators: {
-      tailwind: answers.generators.includes('tailwind'),
-      figma: answers.generators.includes('figma'),
-    },
+    generators,
   };
 
   const filesToCreate: FileToCreate[] = [
