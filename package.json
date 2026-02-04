@@ -20,6 +20,7 @@
     "clean": "turbo clean && rm -rf node_modules"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "husky": "^8.0.3",
     "turbo": "^1.13.0"
   }
