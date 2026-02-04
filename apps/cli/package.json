@@ -37,8 +37,8 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.0.0",
-    "@clafoutis/shared": "workspace:*",
     "@clafoutis/generators": "workspace:*",
+    "@clafoutis/shared": "workspace:*",
     "ajv": "^8.12.0",
     "commander": "^12.0.0",
     "style-dictionary": "^5.0.0",

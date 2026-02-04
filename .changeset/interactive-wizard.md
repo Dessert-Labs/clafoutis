@@ -1,6 +1,7 @@
 ---
 "@clafoutis/cli": major
 "@clafoutis/generators": major
+"@clafoutis/shared": major
 ---
 
 Clafoutis v2 - Full CLI for GitOps-powered design token generation and distribution.
