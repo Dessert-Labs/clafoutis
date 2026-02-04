@@ -107,11 +107,13 @@ function needsSanitize(manifest: Manifest): boolean {
 function deriveWorkspaceRange(raw: string, version: string): string {
   const remainder = raw.slice('workspace:'.length).trim();
   if (!remainder || remainder === '*') return `^${version}`;
+  // Explicit ^/~ with a version number (e.g., "^1.2.3" or "~1.2.3") – return unchanged
+  if (/^[\^~][0-9]/.test(remainder)) {
+    return remainder;
+  }
+  // Shorthand ^/~ alone – expand to ^${version} or ~${version}
   if (remainder === '^') return `^${version}`;
   if (remainder === '~') return `~${version}`;
-  if (remainder.startsWith('^') || remainder.startsWith('~')) {
-    return `${remainder[0]}${version}`;
-  }
   if (/^(>=|<=|>|<|=)$/.test(remainder)) {
     return `${remainder}${version}`;
   }
@@ -196,24 +198,24 @@ async function runPublish(): Promise<void> {
   const backups: Backup[] = [];
   const sanitizedPackages: string[] = [];
 
-  for (const pkg of packages) {
-    if (pkg.manifest.private) continue;
-    if (!needsSanitize(pkg.manifest)) continue;
-
-    const { changed, next } = sanitizeManifest(pkg);
-    if (!changed) continue;
-
-    writeManifestWithBackup(pkg.manifestPath, next, backups);
-    sanitizedPackages.push(pkg.manifest.name ?? pkg.manifestPath);
-  }
-
-  if (sanitizedPackages.length) {
-    console.log('Sanitized workspace dependencies for:', sanitizedPackages.join(', '));
-  } else {
-    console.log('No workspace dependencies required sanitization.');
-  }
-
   try {
+    for (const pkg of packages) {
+      if (pkg.manifest.private) continue;
+      if (!needsSanitize(pkg.manifest)) continue;
+
+      const { changed, next } = sanitizeManifest(pkg);
+      if (!changed) continue;
+
+      writeManifestWithBackup(pkg.manifestPath, next, backups);
+      sanitizedPackages.push(pkg.manifest.name ?? pkg.manifestPath);
+    }
+
+    if (sanitizedPackages.length) {
+      console.log('Sanitized workspace dependencies for:', sanitizedPackages.join(', '));
+    } else {
+      console.log('No workspace dependencies required sanitization.');
+    }
+
     await exec(['pnpm', 'changeset', 'publish']);
   } finally {
     if (backups.length) {
