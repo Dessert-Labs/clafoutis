@@ -151,6 +151,11 @@ function sanitizeManifest(info: PackageInfo): { changed: boolean; next: Manifest
             `Unable to resolve workspace dependency "${dep}" for package "${info.manifest.name}"`
           );
         }
+        if (target.manifest.private) {
+          throw new Error(
+            `Package "${info.manifest.name}" depends on private workspace package "${dep}"; cannot publish`
+          );
+        }
         const normalized = deriveWorkspaceRange(value, target.manifest.version);
         if (normalized !== value) {
           record[dep] = normalized;
