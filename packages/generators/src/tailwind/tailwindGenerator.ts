@@ -396,7 +396,7 @@ async function main(): Promise<void> {
         },
       },
     });
-    SD.buildAllPlatforms();
+    await SD.buildAllPlatforms();
     logger.success("Base theme built!");
   }
 
@@ -428,7 +428,7 @@ async function main(): Promise<void> {
         },
       },
     });
-    SD.buildAllPlatforms();
+    await SD.buildAllPlatforms();
     logger.success("Dark theme built!");
   }
 

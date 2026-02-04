@@ -7,7 +7,7 @@ GitOps-powered design token generation and distribution.
 Design tokens get out of sync. A designer updates the primary color in Figma, but three weeks later the React app still has the old blue. The marketing site has a different shade entirely. Nobody knows which version is "correct."
 
 **Without Clafoutis:**
-```
+```text
 Designer updates Figma → exports JSON → emails developer → 
 developer copies values → commits to repo A → forgets repo B →
 repos drift apart → Figma has different values than code →
@@ -15,7 +15,7 @@ repos drift apart → Figma has different values than code →
 ```
 
 **With Clafoutis:**
-```
+```text
 Update tokens in Git → PR merged → GitHub Release created →
 all consuming repos sync the same version →
 Figma variables regenerated from the same source →

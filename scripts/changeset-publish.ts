@@ -112,8 +112,11 @@ function deriveWorkspaceRange(raw: string, version: string): string {
   if (remainder.startsWith('^') || remainder.startsWith('~')) {
     return `${remainder[0]}${version}`;
   }
-  if (/^(>=|<=|>|<|=)/.test(remainder)) {
+  if (/^(>=|<=|>|<|=)$/.test(remainder)) {
     return `${remainder}${version}`;
+  }
+  if (/^(>=|<=|>|<|=)[0-9]/.test(remainder)) {
+    return remainder;
   }
   if (/^[0-9]/.test(remainder)) {
     return remainder;
