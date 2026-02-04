@@ -1,65 +1,26 @@
 {
   "name": "clafoutis",
-  "version": "0.1.0",
+  "version": "0.0.0",
+  "private": true,
   "description": "GitOps powered design system generator - generate and sync design tokens",
-  "author": "Dessert",
-  "license": "Business Source License",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Dessert-Labs/clafoutis.git"
+  "packageManager": "pnpm@8.15.0",
+  "engines": {
+    "node": ">=22.0.0"
   },
-  "homepage": "https://github.com/Dessert-Labs/clafoutis#readme",
-  "bugs": {
-    "url": "https://github.com/Dessert-Labs/clafoutis/issues"
-  },
-  "keywords": [
-    "design-tokens",
-    "design-system",
-    "gitops",
-    "tailwind",
-    "figma",
-    "scss",
-    "css-variables"
-  ],
-  "type": "module",
-  "bin": {
-    "clafoutis": "./dist/cli/index.js"
-  },
-  "main": "./dist/cli/types.js",
-  "types": "./dist/cli/types.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/cli/types.d.ts",
-      "import": "./dist/cli/types.js"
-    }
-  },
-  "files": [
-    "dist/**/*",
-    "examples/**/*",
-    "schemas/**/*"
-  ],
   "scripts": {
-    "build": "tsc",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "prepublishOnly": "npm run build",
-    "release:publish": "pnpm publish --access public --no-git-checks"
-  },
-  "dependencies": {
-    "ajv": "^8.12.0",
-    "commander": "^12.0.0",
-    "glob": "^11.0.2",
-    "style-dictionary": "^5.0.0",
-    "tinycolor2": "^1.6.0",
-    "tsx": "^4.19.4"
+    "prepare": "husky install",
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint:check",
+    "lint:fix": "turbo lint:write",
+    "format": "turbo format:check",
+    "format:fix": "turbo format:write",
+    "type-check": "turbo type-check",
+    "test": "turbo test",
+    "clean": "turbo clean && rm -rf node_modules"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.0",
-    "@types/node": "^22.15.27",
-    "@types/tinycolor2": "^1.4.6",
-    "@vitest/coverage-v8": "^2.0.0",
-    "typescript": "^5.8.3",
-    "vitest": "^2.0.0"
+    "husky": "^8.0.3",
+    "turbo": "^1.13.0"
   }
 }

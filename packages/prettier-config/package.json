@@ -1,0 +1,8 @@
+{
+  "name": "@clafoutis/prettier-config",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "prettier": "^3.0.0"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "@clafoutis/generators",
+  "version": "0.1.0",
+  "description": "Design token generators for Clafoutis",
+  "author": "Dessert",
+  "license": "Business Source License",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./tailwind": {
+      "types": "./dist/tailwind/tailwindGenerator.d.ts",
+      "import": "./dist/tailwind/tailwindGenerator.js"
+    },
+    "./figma": {
+      "types": "./dist/figma/figmaGenerator.d.ts",
+      "import": "./dist/figma/figmaGenerator.js"
+    }
+  },
+  "files": [
+    "dist/**/*",
+    "config.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint:check": "eslint src",
+    "lint:write": "eslint src --fix",
+    "format:check": "prettier --check src",
+    "format:write": "prettier --write src",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@clafoutis/shared": "workspace:*",
+    "glob": "^11.0.2",
+    "style-dictionary": "^5.0.0",
+    "tinycolor2": "^1.6.0"
+  },
+  "devDependencies": {
+    "@clafoutis/eslint-config": "workspace:*",
+    "@clafoutis/prettier-config": "workspace:*",
+    "@clafoutis/vitest-config": "workspace:*",
+    "@types/node": "^22.15.27",
+    "@types/tinycolor2": "^1.4.6",
+    "typescript": "^5.8.3"
+  },
+  "prettier": "@clafoutis/prettier-config"
+}

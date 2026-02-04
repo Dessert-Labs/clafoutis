@@ -1,0 +1,52 @@
+{
+  "name": "@clafoutis/cli",
+  "version": "0.1.0",
+  "description": "GitOps powered design system CLI - generate and sync design tokens",
+  "author": "Dessert",
+  "license": "Business Source License",
+  "type": "module",
+  "bin": {
+    "clafoutis": "./dist/index.js"
+  },
+  "main": "./dist/types.js",
+  "types": "./dist/types.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js"
+    }
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint:check": "eslint src",
+    "lint:write": "eslint src --fix",
+    "format:check": "prettier --check src",
+    "format:write": "prettier --write src",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@clafoutis/shared": "workspace:*",
+    "@clafoutis/generators": "workspace:*",
+    "ajv": "^8.12.0",
+    "commander": "^12.0.0",
+    "style-dictionary": "^5.0.0",
+    "tsx": "^4.19.4"
+  },
+  "devDependencies": {
+    "@clafoutis/eslint-config": "workspace:*",
+    "@clafoutis/prettier-config": "workspace:*",
+    "@clafoutis/vitest-config": "workspace:*",
+    "@types/node": "^22.15.27",
+    "typescript": "^5.8.3",
+    "vitest": "^2.0.0"
+  },
+  "prettier": "@clafoutis/prettier-config"
+}

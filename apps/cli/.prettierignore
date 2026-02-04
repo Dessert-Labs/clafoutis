@@ -1,0 +1,18 @@
+# Build outputs
+dist/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Config files
+tsconfig.json
+
+# Lock files
+pnpm-lock.yaml
+
+# Coverage
+coverage/

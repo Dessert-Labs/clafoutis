@@ -187,9 +187,47 @@ export const generate: GeneratorPlugin = async ({ tokensDir, outputDir, StyleDic
 };
 ```
 
+## Project Structure 📁
+
+```
+clafoutis/
+├── apps/
+│   └── cli/              # Main CLI package
+├── packages/
+│   ├── eslint-config/    # Shared ESLint config
+│   ├── prettier-config/  # Shared Prettier config
+│   ├── shared/           # Shared utilities (logger)
+│   ├── vitest-config/    # Shared Vitest config
+│   └── generators/       # Token generators
+├── docs/                 # Documentation
+├── examples/             # Example configs and workflows
+├── schemas/              # JSON schemas
+├── tokens/               # Example design tokens
+└── Makefile              # Development commands
+```
+
 ## Documentation 📚
 
 - [Token Distribution Guide](docs/distribution/README.md) - Complete guide for producers and consumers
+
+## Development 🛠️
+
+```bash
+# Install dependencies
+make init
+
+# Build all packages
+make build-all
+
+# Run all checks (lint, format, type-check)
+make check-all
+
+# Fix all issues (lint, format)
+make fix-all
+
+# Run tests
+make test-all
+```
 
 ## Why GitOps? 🔄
 

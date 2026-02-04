@@ -1,0 +1,37 @@
+# Copy this file to .prettierignore in your app/package
+# and customize as needed
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Config files
+tsconfig.json
+tsconfig.*.json
+.eslintrc.cjs
+.eslintrc.js
+
+# Lock files
+pnpm-lock.yaml
+
+# Generated files
+*.gen.ts
+*.generated.ts
+
+# Documentation (manually formatted)
+CHANGELOG.md
+
+# Environment files
+.env
+.env.*
