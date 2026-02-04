@@ -19,7 +19,7 @@ function cleanDist(): void {
     fs.rmSync(distDir, { recursive: true, force: true });
     logger.info(`Removed ${distDir}`);
   } catch (err) {
-    logger.error(`No existing ${distDir} to remove`);
+    logger.error(`Failed to remove ${distDir}: ${err}`);
   }
 
   fs.mkdirSync(distDir, { recursive: true });
@@ -198,16 +198,16 @@ function toJSLiteral(value: any, indent = 2): string {
 
 /**
  * Sets a nested property in an object using an array of keys
- * @param {Object} obj - The target object
- * @param {string[]} pathArray - Array of keys representing the path
- * @param {any} value - The value to set
+ * @param obj - The target object
+ * @param pathArray - Array of keys representing the path
+ * @param value - The value to set (token values: strings, numbers, or nested objects)
  */
 function setNestedProperty(
-  obj: Record<string, any>,
+  obj: Record<string, unknown>,
   pathArray: string[],
-  value: any,
+  value: unknown,
 ): void {
-  let current = obj;
+  let current: Record<string, unknown> = obj;
   for (let i = 0; i < pathArray.length; i++) {
     const key = pathArray[i];
     if (i === pathArray.length - 1) {
@@ -216,7 +216,7 @@ function setNestedProperty(
       if (!current[key]) {
         current[key] = {};
       }
-      current = current[key];
+      current = current[key] as Record<string, unknown>;
     }
   }
 }

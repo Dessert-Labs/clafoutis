@@ -106,7 +106,7 @@ For automated CI/CD integration, you can use Figma's Variables REST API to progr
 
 ### Prerequisites
 
-- Figma Enterprise or Organization plan (Variables API requires paid plans)
+- Figma Enterprise or Organization plan (Variables API requires a paid plan)
 - Figma API access token with `file_variables:write` scope
 
 ### API Workflow
@@ -265,7 +265,7 @@ The Figma generator creates separate collections for Light and Dark modes. In Fi
 
 Figma's native variable system supports modes (variants). For a unified experience:
 
-```
+```text
 Collection: "Theme"
 ├── Mode: "Light"
 │   ├── color/background: #FFFFFF
@@ -291,7 +291,7 @@ Figma uses 0-1 range for RGBA values. The Clafoutis generator automatically conv
 ### Variables not appearing in Figma
 
 1. Ensure you're using Figma's native variables feature (not just styles)
-2. Check that your Figma plan supports variables (requires paid plan for full features)
+2. Check that your Figma plan supports variables (requires a paid plan for full features)
 3. Verify the JSON structure matches Figma's expected format
 
 ### Token references not resolved

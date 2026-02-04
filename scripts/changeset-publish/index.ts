@@ -5,22 +5,22 @@
  * then restores the original package.json files after publish completes.
  */
 
-import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { globSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const repoRoot = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(__dirname, '../..');
 
-type DependencyBlock =
+export type DependencyBlock =
   | 'dependencies'
   | 'devDependencies'
   | 'peerDependencies'
   | 'optionalDependencies';
 
-interface Manifest {
+export interface Manifest {
   name?: string;
   version?: string;
   private?: boolean;
@@ -30,48 +30,93 @@ interface Manifest {
   optionalDependencies?: Record<string, string>;
 }
 
-interface PackageInfo {
+export interface PackageInfo {
   dir: string;
   manifestPath: string;
   manifest: Manifest;
 }
 
-interface Backup {
+export interface Backup {
   path: string;
   contents: string;
 }
 
-function listPackages(): PackageInfo[] {
-  const results: PackageInfo[] = [];
+/**
+ * Parse workspace patterns from pnpm-workspace.yaml content.
+ * Expected format:
+ *   packages:
+ *     - 'apps/*'
+ *     - 'packages/*'
+ */
+export function parseWorkspaceYaml(content: string): string[] {
+  const patterns: string[] = [];
 
-  const appsDir = path.join(repoRoot, 'apps');
-  if (existsSync(appsDir)) {
-    for (const entry of readdirSync(appsDir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      const dir = path.join(appsDir, entry.name);
-      const manifestPath = path.join(dir, 'package.json');
-      if (!existsSync(manifestPath)) continue;
-      try {
-        const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Manifest;
-        if (manifest.name) results.push({ dir, manifestPath, manifest });
-      } catch {
-        console.warn(`Skipping ${entry.name}: failed to parse package.json`);
+  // Simple line-by-line parsing for the packages array
+  let inPackages = false;
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (trimmed === 'packages:') {
+      inPackages = true;
+      continue;
+    }
+    if (inPackages) {
+      // Stop if we hit another top-level key (no leading whitespace and ends with ':')
+      if (trimmed && !line.startsWith(' ') && !line.startsWith('\t') && trimmed.endsWith(':')) {
+        break;
+      }
+      // Match array items like "- 'apps/*'" or '- "packages/*"' or "- apps/*"
+      const match = trimmed.match(/^-\s*['"]?([^'"]+)['"]?$/);
+      if (match) {
+        patterns.push(match[1]);
       }
     }
   }
 
-  const packagesDir = path.join(repoRoot, 'packages');
-  if (existsSync(packagesDir)) {
-    for (const entry of readdirSync(packagesDir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      const dir = path.join(packagesDir, entry.name);
-      const manifestPath = path.join(dir, 'package.json');
-      if (!existsSync(manifestPath)) continue;
+  return patterns;
+}
+
+function getWorkspacePatterns(): string[] {
+  const workspaceYamlPath = path.join(repoRoot, 'pnpm-workspace.yaml');
+  if (!existsSync(workspaceYamlPath)) {
+    throw new Error('pnpm-workspace.yaml not found at repo root');
+  }
+
+  const content = readFileSync(workspaceYamlPath, 'utf8');
+  const patterns = parseWorkspaceYaml(content);
+
+  if (patterns.length === 0) {
+    throw new Error('No workspace patterns found in pnpm-workspace.yaml');
+  }
+
+  return patterns;
+}
+
+function listPackages(): PackageInfo[] {
+  const results: PackageInfo[] = [];
+  const patterns = getWorkspacePatterns();
+  const seen = new Set<string>();
+
+  for (const pattern of patterns) {
+    // Skip negated patterns (exclusions)
+    if (pattern.startsWith('!')) continue;
+
+    // Glob for package.json files matching the pattern
+    const globPattern = path.join(repoRoot, pattern, 'package.json');
+    const matches = globSync(globPattern);
+
+    for (const manifestPath of matches) {
+      // Avoid duplicates
+      if (seen.has(manifestPath)) continue;
+      seen.add(manifestPath);
+
+      const dir = path.dirname(manifestPath);
       try {
         const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Manifest;
-        if (manifest.name) results.push({ dir, manifestPath, manifest });
+        if (manifest.name) {
+          results.push({ dir, manifestPath, manifest });
+        }
       } catch {
-        console.warn(`Skipping ${entry.name}: failed to parse package.json`);
+        console.warn(`Skipping ${manifestPath}: failed to parse package.json`);
       }
     }
   }
@@ -79,15 +124,18 @@ function listPackages(): PackageInfo[] {
   return results;
 }
 
-const packages = listPackages();
-const packagesByName = new Map<string, PackageInfo>();
-for (const pkg of packages) {
-  if (pkg.manifest.name) {
-    packagesByName.set(pkg.manifest.name, pkg);
+function buildPackagesByName(): Map<string, PackageInfo> {
+  const packages = listPackages();
+  const map = new Map<string, PackageInfo>();
+  for (const pkg of packages) {
+    if (pkg.manifest.name) {
+      map.set(pkg.manifest.name, pkg);
+    }
   }
+  return map;
 }
 
-function needsSanitize(manifest: Manifest): boolean {
+export function needsSanitize(manifest: Manifest): boolean {
   const blocks: DependencyBlock[] = [
     'dependencies',
     'devDependencies',
@@ -104,7 +152,7 @@ function needsSanitize(manifest: Manifest): boolean {
   });
 }
 
-function deriveWorkspaceRange(raw: string, version: string): string {
+export function deriveWorkspaceRange(raw: string, version: string): string {
   const remainder = raw.slice('workspace:'.length).trim();
   if (!remainder || remainder === '*') return `^${version}`;
   // Explicit ^/~ with a version number (e.g., "^1.2.3" or "~1.2.3") – return unchanged
@@ -126,7 +174,10 @@ function deriveWorkspaceRange(raw: string, version: string): string {
   return `^${version}`;
 }
 
-function sanitizeManifest(info: PackageInfo): { changed: boolean; next: Manifest } {
+export function sanitizeManifest(
+  info: PackageInfo,
+  pkgsByName: Map<string, PackageInfo>
+): { changed: boolean; next: Manifest } {
   const blocks: DependencyBlock[] = [
     'dependencies',
     'devDependencies',
@@ -145,7 +196,7 @@ function sanitizeManifest(info: PackageInfo): { changed: boolean; next: Manifest
       if (typeof value !== 'string') continue;
 
       if (value.startsWith('workspace:')) {
-        const target = packagesByName.get(dep);
+        const target = pkgsByName.get(dep);
         if (!target || !target.manifest.version) {
           throw new Error(
             `Unable to resolve workspace dependency "${dep}" for package "${info.manifest.name}"`
@@ -168,13 +219,13 @@ function sanitizeManifest(info: PackageInfo): { changed: boolean; next: Manifest
   return { changed, next };
 }
 
-function writeManifestWithBackup(filePath: string, manifest: Manifest, backups: Backup[]): void {
+export function writeManifestWithBackup(filePath: string, manifest: Manifest, backups: Backup[]): void {
   const original = readFileSync(filePath, 'utf8');
   backups.push({ path: filePath, contents: original });
   writeFileSync(filePath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
 }
 
-function restoreBackups(backups: Backup[]): void {
+export function restoreBackups(backups: Backup[]): void {
   for (const backup of backups) {
     writeFileSync(backup.path, backup.contents, 'utf8');
   }
@@ -200,6 +251,8 @@ async function exec(args: string[]): Promise<void> {
 }
 
 async function runPublish(): Promise<void> {
+  const packages = listPackages();
+  const packagesByName = buildPackagesByName();
   const backups: Backup[] = [];
   const sanitizedPackages: string[] = [];
 
@@ -208,7 +261,7 @@ async function runPublish(): Promise<void> {
       if (pkg.manifest.private) continue;
       if (!needsSanitize(pkg.manifest)) continue;
 
-      const { changed, next } = sanitizeManifest(pkg);
+      const { changed, next } = sanitizeManifest(pkg, packagesByName);
       if (!changed) continue;
 
       writeManifestWithBackup(pkg.manifestPath, next, backups);
@@ -230,7 +283,11 @@ async function runPublish(): Promise<void> {
   }
 }
 
-runPublish().catch((err) => {
-  console.error(err);
-  process.exitCode = 1;
-});
+// Only run when executed directly, not when imported for testing
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
+  runPublish().catch((err) => {
+    console.error(err);
+    process.exitCode = 1;
+  });
+}

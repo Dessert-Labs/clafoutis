@@ -17,8 +17,9 @@
     "format:fix": "turbo format:write",
     "type-check": "turbo type-check",
     "test": "turbo test",
+    "test:scripts": "vitest run scripts/",
     "clean": "turbo clean && rm -rf node_modules",
-    "release:publish": "pnpm turbo build && pnpm exec tsx scripts/changeset-publish.ts"
+    "release:publish": "pnpm turbo build && pnpm exec tsx scripts/changeset-publish/index.ts"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
@@ -29,6 +30,7 @@
     "tsup": "^8.5.0",
     "tsx": "^4.19.0",
     "turbo": "^1.13.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^2.0.0"
   }
 }
