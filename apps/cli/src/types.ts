@@ -1,4 +1,4 @@
-import type StyleDictionary from 'style-dictionary';
+import type StyleDictionary from "style-dictionary";
 
 /**
  * Context object passed to generator plugins containing all necessary

@@ -1,16 +1,16 @@
-import { logger } from '@clafoutis/shared';
-import { spawn } from 'child_process';
-import fs from 'fs/promises';
-import path from 'path';
+import { logger } from "@clafoutis/shared";
+import { spawn } from "child_process";
+import fs from "fs/promises";
+import path from "path";
 
-import { offerWizard } from '../cli/wizard.js';
-import type { ClafoutisConfig } from '../types.js';
-import { readCache, writeCache } from '../utils/cache.js';
-import { fileExists, readConfig } from '../utils/config.js';
-import { ClafoutisError, configNotFoundError } from '../utils/errors.js';
-import { downloadRelease } from '../utils/github.js';
-import { validateConsumerConfig } from '../utils/validate.js';
-import { initCommand } from './init.js';
+import { offerWizard } from "../cli/wizard";
+import type { ClafoutisConfig } from "../types";
+import { readCache, writeCache } from "../utils/cache";
+import { fileExists, readConfig } from "../utils/config";
+import { ClafoutisError, configNotFoundError } from "../utils/errors";
+import { downloadRelease } from "../utils/github";
+import { validateConsumerConfig } from "../utils/validate";
+import { initCommand } from "./init";
 
 interface SyncOptions {
   force?: boolean;
@@ -23,7 +23,7 @@ interface SyncOptions {
  */
 async function writeOutput(
   config: ClafoutisConfig,
-  files: Map<string, string>
+  files: Map<string, string>,
 ): Promise<void> {
   for (const [assetName, content] of files) {
     const configPath = config.files[assetName];
@@ -42,20 +42,20 @@ async function writeOutput(
  * Downloads design tokens from a GitHub release and writes them to configured paths.
  */
 export async function syncCommand(options: SyncOptions): Promise<void> {
-  const configPath = options.config || '.clafoutis/consumer.json';
+  const configPath = options.config || ".clafoutis/consumer.json";
 
   let config = await readConfig(configPath);
   if (!config) {
     if (await fileExists(configPath)) {
       throw new ClafoutisError(
-        'Invalid configuration',
+        "Invalid configuration",
         `Could not parse ${configPath}`,
-        'Ensure the file contains valid JSON'
+        "Ensure the file contains valid JSON",
       );
     }
 
     if (process.stdin.isTTY) {
-      const shouldRunWizard = await offerWizard('consumer');
+      const shouldRunWizard = await offerWizard("consumer");
       if (shouldRunWizard) {
         await initCommand({ consumer: true });
         config = await readConfig(configPath);
@@ -73,15 +73,15 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
   validateConsumerConfig(config);
 
   const cachedVersion = await readCache();
-  const isLatest = config.version === 'latest';
+  const isLatest = config.version === "latest";
 
   logger.info(`Repo: ${config.repo}`);
   logger.info(`Pinned: ${config.version}`);
-  logger.info(`Cached: ${cachedVersion || 'none'}`);
+  logger.info(`Cached: ${cachedVersion || "none"}`);
 
   if (options.dryRun) {
     logger.info(
-      '[dry-run] Would download from: ' + config.repo + ' ' + config.version
+      "[dry-run] Would download from: " + config.repo + " " + config.version,
     );
     for (const [assetName, outputPath] of Object.entries(config.files)) {
       logger.info(`[dry-run] ${assetName} → ${outputPath}`);
@@ -90,14 +90,14 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
   }
 
   const resolveOutputPaths = () =>
-    Object.values(config.files).map(p => path.resolve(process.cwd(), p));
+    Object.values(config.files).map((p) => path.resolve(process.cwd(), p));
 
   if (!isLatest && !options.force && config.version === cachedVersion) {
     const outputPaths = resolveOutputPaths();
     const existsResults = await Promise.all(
-      outputPaths.map(p => fileExists(p))
+      outputPaths.map((p) => fileExists(p)),
     );
-    const allOutputsExist = existsResults.every(exists => exists);
+    const allOutputsExist = existsResults.every((exists) => exists);
     if (allOutputsExist) {
       logger.success(`Already at ${config.version} - no sync needed`);
       return;
@@ -112,9 +112,9 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
   if (isLatest && !options.force && resolvedTag === cachedVersion) {
     const outputPaths = resolveOutputPaths();
     const existsResults = await Promise.all(
-      outputPaths.map(p => fileExists(p))
+      outputPaths.map((p) => fileExists(p)),
     );
-    const allOutputsExist = existsResults.every(exists => exists);
+    const allOutputsExist = existsResults.every((exists) => exists);
     if (allOutputsExist) {
       logger.success(`Already at ${resolvedTag} (latest) - no sync needed`);
       return;
@@ -146,53 +146,53 @@ async function runPostSync(command: string): Promise<void> {
   logger.info(`Running postSync: ${command}`);
 
   // Determine the shell based on platform
-  const isWindows = process.platform === 'win32';
-  const shell = isWindows ? 'cmd.exe' : '/bin/sh';
-  const shellArgs = isWindows ? ['/c', command] : ['-c', command];
+  const isWindows = process.platform === "win32";
+  const shell = isWindows ? "cmd.exe" : "/bin/sh";
+  const shellArgs = isWindows ? ["/c", command] : ["-c", command];
 
   return new Promise((resolve, reject) => {
     const child = spawn(shell, shellArgs, {
-      stdio: ['inherit', 'pipe', 'pipe'],
+      stdio: ["inherit", "pipe", "pipe"],
       env: process.env,
     });
 
-    let stdout = '';
-    let stderr = '';
+    let stdout = "";
+    let stderr = "";
 
-    child.stdout?.on('data', (data: Buffer) => {
+    child.stdout?.on("data", (data: Buffer) => {
       stdout += data.toString();
     });
 
-    child.stderr?.on('data', (data: Buffer) => {
+    child.stderr?.on("data", (data: Buffer) => {
       stderr += data.toString();
     });
 
-    child.on('error', (err: Error) => {
+    child.on("error", (err: Error) => {
       reject(
         new ClafoutisError(
-          'postSync failed',
+          "postSync failed",
           `Failed to spawn command: ${err.message}`,
-          'Check that the command is valid and executable'
-        )
+          "Check that the command is valid and executable",
+        ),
       );
     });
 
-    child.on('close', (code: number | null) => {
+    child.on("close", (code: number | null) => {
       if (code === 0) {
         if (stdout.trim()) {
           logger.info(stdout.trim());
         }
-        logger.success('postSync completed');
+        logger.success("postSync completed");
         resolve();
       } else {
-        const output = [stdout, stderr].filter(Boolean).join('\n').trim();
-        logger.error(`postSync output:\n${output || '(no output)'}`);
+        const output = [stdout, stderr].filter(Boolean).join("\n").trim();
+        logger.error(`postSync output:\n${output || "(no output)"}`);
         reject(
           new ClafoutisError(
-            'postSync failed',
+            "postSync failed",
             `Command exited with code ${code}`,
-            'Review the command output above and fix any issues'
-          )
+            "Review the command output above and fix any issues",
+          ),
         );
       }
     });

@@ -1,16 +1,16 @@
-import fs from 'fs/promises';
+import fs from "fs/promises";
 
-import type { ClafoutisConfig, ProducerConfig } from '../types.js';
+import type { ClafoutisConfig, ProducerConfig } from "../types";
 
 /**
  * Reads and parses a consumer configuration file (.clafoutis.json).
  * Returns null if the file does not exist or cannot be parsed.
  */
 export async function readConfig(
-  configPath: string
+  configPath: string,
 ): Promise<ClafoutisConfig | null> {
   try {
-    const content = await fs.readFile(configPath, 'utf-8');
+    const content = await fs.readFile(configPath, "utf-8");
     return JSON.parse(content) as ClafoutisConfig;
   } catch {
     return null;
@@ -22,10 +22,10 @@ export async function readConfig(
  * Returns null if the file does not exist or cannot be parsed.
  */
 export async function readProducerConfig(
-  configPath: string
+  configPath: string,
 ): Promise<ProducerConfig | null> {
   try {
-    const content = await fs.readFile(configPath, 'utf-8');
+    const content = await fs.readFile(configPath, "utf-8");
     return JSON.parse(content) as ProducerConfig;
   } catch {
     return null;

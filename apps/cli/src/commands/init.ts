@@ -1,11 +1,11 @@
-import * as p from '@clack/prompts';
-import fs from 'fs/promises';
-import path from 'path';
+import * as p from "@clack/prompts";
+import fs from "fs/promises";
+import path from "path";
 
 import {
   validateConsumerFlags,
   validateProducerFlags,
-} from '../cli/validation.js';
+} from "../cli/validation";
 import {
   type ConsumerWizardAnswers,
   log,
@@ -15,11 +15,11 @@ import {
   selectMode,
   showIntro,
   showOutro,
-} from '../cli/wizard.js';
-import { getAllStarterTokens } from '../templates/tokens.js';
-import { getWorkflowPath, getWorkflowTemplate } from '../templates/workflow.js';
-import { fileExists } from '../utils/config.js';
-import { ClafoutisError } from '../utils/errors.js';
+} from "../cli/wizard";
+import { getAllStarterTokens } from "../templates/tokens";
+import { getWorkflowPath, getWorkflowTemplate } from "../templates/workflow";
+import { fileExists } from "../utils/config";
+import { ClafoutisError } from "../utils/errors";
 
 export interface InitOptions {
   producer?: boolean;
@@ -52,16 +52,16 @@ interface FileToCreate {
  * @throws ClafoutisError if any entries are invalid
  */
 function parseGenerators(generatorsString: string): string[] {
-  const entries = generatorsString.split(',').map(g => g.trim());
+  const entries = generatorsString.split(",").map((g) => g.trim());
   const invalidEntries: string[] = [];
 
   for (const entry of entries) {
     if (!entry) {
-      invalidEntries.push('(empty entry - check for extra commas)');
+      invalidEntries.push("(empty entry - check for extra commas)");
       continue;
     }
 
-    const colonIdx = entry.indexOf(':');
+    const colonIdx = entry.indexOf(":");
     if (colonIdx === 0) {
       invalidEntries.push(`"${entry}" (missing generator name before ":")`);
     } else if (colonIdx > 0) {
@@ -78,13 +78,13 @@ function parseGenerators(generatorsString: string): string[] {
 
   if (invalidEntries.length > 0) {
     throw new ClafoutisError(
-      'Invalid generator entries',
-      `The following entries are malformed:\n  - ${invalidEntries.join('\n  - ')}`,
-      'Use format "tailwind,figma" for built-ins or "name:./path/to/plugin.js" for custom generators'
+      "Invalid generator entries",
+      `The following entries are malformed:\n  - ${invalidEntries.join("\n  - ")}`,
+      'Use format "tailwind,figma" for built-ins or "name:./path/to/plugin.js" for custom generators',
     );
   }
 
-  return entries.filter(e => e.length > 0);
+  return entries.filter((e) => e.length > 0);
 }
 
 /**
@@ -96,9 +96,9 @@ export async function initCommand(options: InitOptions): Promise<void> {
   // Reject ambiguous flag combinations early
   if (options.producer && options.consumer) {
     throw new ClafoutisError(
-      'Conflicting flags',
-      'Cannot specify both --producer and --consumer',
-      'Choose one: --producer for design system repos, --consumer for application repos'
+      "Conflicting flags",
+      "Cannot specify both --producer and --consumer",
+      "Choose one: --producer for design system repos, --consumer for application repos",
     );
   }
 
@@ -114,26 +114,26 @@ export async function initCommand(options: InitOptions): Promise<void> {
 
 async function runInteractiveInit(
   options: InitOptions,
-  isDryRun: boolean
+  isDryRun: boolean,
 ): Promise<void> {
   showIntro(isDryRun);
 
-  let mode: 'producer' | 'consumer';
+  let mode: "producer" | "consumer";
 
   if (options.producer) {
-    mode = 'producer';
+    mode = "producer";
   } else if (options.consumer) {
-    mode = 'consumer';
+    mode = "consumer";
   } else {
     const selectedMode = await selectMode();
     if (!selectedMode) {
-      p.cancel('Setup cancelled.');
+      p.cancel("Setup cancelled.");
       process.exit(0);
     }
     mode = selectedMode;
   }
 
-  if (mode === 'producer') {
+  if (mode === "producer") {
     const answers = await runProducerWizard();
     if (!answers) {
       return;
@@ -148,21 +148,21 @@ async function runInteractiveInit(
   }
 
   if (isDryRun) {
-    showOutro('No files were written. Remove --dry-run to apply changes.');
+    showOutro("No files were written. Remove --dry-run to apply changes.");
   } else {
-    showOutro('Setup complete!');
+    showOutro("Setup complete!");
   }
 }
 
 async function runNonInteractiveInit(
   options: InitOptions,
-  isDryRun: boolean
+  isDryRun: boolean,
 ): Promise<void> {
   if (!options.producer && !options.consumer) {
     throw new ClafoutisError(
-      'Mode required',
-      'In non-interactive mode, you must specify --producer or --consumer',
-      'Add --producer or --consumer flag'
+      "Mode required",
+      "In non-interactive mode, you must specify --producer or --consumer",
+      "Add --producer or --consumer flag",
     );
   }
 
@@ -170,18 +170,18 @@ async function runNonInteractiveInit(
     const errors = validateProducerFlags(options);
     if (errors.length > 0) {
       throw new ClafoutisError(
-        'Invalid flags',
-        errors.join('\n'),
-        'Fix the invalid flags and try again'
+        "Invalid flags",
+        errors.join("\n"),
+        "Fix the invalid flags and try again",
       );
     }
 
     const answers: ProducerWizardAnswers = {
       generators: options.generators
         ? parseGenerators(options.generators)
-        : ['tailwind'],
-      tokens: options.tokens ?? './tokens',
-      output: options.output ?? './build',
+        : ["tailwind"],
+      tokens: options.tokens ?? "./tokens",
+      output: options.output ?? "./build",
       workflow: options.workflow ?? true,
     };
 
@@ -190,29 +190,29 @@ async function runNonInteractiveInit(
     const errors = validateConsumerFlags(options);
     if (errors.length > 0) {
       throw new ClafoutisError(
-        'Invalid flags',
-        errors.join('\n'),
-        'Fix the invalid flags and try again'
+        "Invalid flags",
+        errors.join("\n"),
+        "Fix the invalid flags and try again",
       );
     }
 
     if (!options.repo) {
       throw new ClafoutisError(
-        'Repository required',
-        'In non-interactive mode, --repo is required for consumer setup',
-        'Add --repo=org/repo-name flag'
+        "Repository required",
+        "In non-interactive mode, --repo is required for consumer setup",
+        "Add --repo=org/repo-name flag",
       );
     }
 
     const files: Record<string, string> = {};
     if (options.files) {
-      for (const mapping of options.files.split(',')) {
-        const colonIdx = mapping.indexOf(':');
+      for (const mapping of options.files.split(",")) {
+        const colonIdx = mapping.indexOf(":");
         if (colonIdx === -1) {
           throw new ClafoutisError(
-            'Invalid file mapping',
+            "Invalid file mapping",
             `Mapping "${mapping.trim()}" is missing a colon separator`,
-            'Use the format "source:destination" (e.g., "tokens.css:./src/styles/tokens.css")'
+            'Use the format "source:destination" (e.g., "tokens.css:./src/styles/tokens.css")',
           );
         }
 
@@ -221,25 +221,25 @@ async function runNonInteractiveInit(
 
         if (!source) {
           throw new ClafoutisError(
-            'Invalid file mapping',
+            "Invalid file mapping",
             `Mapping "${mapping.trim()}" has an empty source`,
-            'Provide a valid asset name before the colon (e.g., "tokens.css:./path")'
+            'Provide a valid asset name before the colon (e.g., "tokens.css:./path")',
           );
         }
 
         if (!dest) {
           throw new ClafoutisError(
-            'Invalid file mapping',
+            "Invalid file mapping",
             `Mapping "${mapping.trim()}" has an empty destination`,
-            'Provide a valid path after the colon (e.g., "tokens.css:./path")'
+            'Provide a valid path after the colon (e.g., "tokens.css:./path")',
           );
         }
 
         files[source] = dest;
       }
     } else {
-      files['tailwind.base.css'] = './src/styles/base.css';
-      files['tailwind.config.js'] = './tailwind.config.js';
+      files["tailwind.base.css"] = "./src/styles/base.css";
+      files["tailwind.config.js"] = "./tailwind.config.js";
     }
 
     const answers: ConsumerWizardAnswers = {
@@ -254,21 +254,21 @@ async function runNonInteractiveInit(
 async function createProducerConfig(
   answers: ProducerWizardAnswers,
   force: boolean,
-  dryRun: boolean
+  dryRun: boolean,
 ): Promise<void> {
-  const configPath = '.clafoutis/producer.json';
+  const configPath = ".clafoutis/producer.json";
 
   if (!force && (await fileExists(configPath))) {
     throw new ClafoutisError(
-      'Configuration already exists',
+      "Configuration already exists",
       configPath,
-      'Use --force to overwrite the existing configuration'
+      "Use --force to overwrite the existing configuration",
     );
   }
 
   const generators: Record<string, boolean | string> = {};
   for (const entry of answers.generators) {
-    const colonIdx = entry.indexOf(':');
+    const colonIdx = entry.indexOf(":");
     if (colonIdx > 0) {
       const name = entry.slice(0, colonIdx).trim();
       const pluginPath = entry.slice(colonIdx + 1).trim();
@@ -287,7 +287,7 @@ async function createProducerConfig(
   const filesToCreate: FileToCreate[] = [
     {
       path: configPath,
-      content: JSON.stringify(config, null, 2) + '\n',
+      content: JSON.stringify(config, null, 2) + "\n",
       description: `tokens: "${answers.tokens}", output: "${answers.output}"`,
     },
   ];
@@ -301,7 +301,7 @@ async function createProducerConfig(
     filesToCreate.push({
       path: tokenPath,
       content: token.content,
-      description: 'Starter token template',
+      description: "Starter token template",
     });
   }
 
@@ -311,7 +311,7 @@ async function createProducerConfig(
       filesToCreate.push({
         path: workflowPath,
         content: getWorkflowTemplate(),
-        description: 'Auto-release workflow on push to main',
+        description: "Auto-release workflow on push to main",
       });
     }
   }
@@ -320,35 +320,35 @@ async function createProducerConfig(
     showDryRunOutput(filesToCreate);
   } else {
     await writeFiles(filesToCreate);
-    showNextSteps('producer', answers);
+    showNextSteps("producer", answers);
   }
 }
 
 async function createConsumerConfig(
   answers: ConsumerWizardAnswers,
   force: boolean,
-  dryRun: boolean
+  dryRun: boolean,
 ): Promise<void> {
-  const configPath = '.clafoutis/consumer.json';
+  const configPath = ".clafoutis/consumer.json";
 
   if (!force && (await fileExists(configPath))) {
     throw new ClafoutisError(
-      'Configuration already exists',
+      "Configuration already exists",
       configPath,
-      'Use --force to overwrite the existing configuration'
+      "Use --force to overwrite the existing configuration",
     );
   }
 
   const config = {
     repo: answers.repo,
-    version: 'latest',
+    version: "latest",
     files: answers.files,
   };
 
   const filesToCreate: FileToCreate[] = [
     {
       path: configPath,
-      content: JSON.stringify(config, null, 2) + '\n',
+      content: JSON.stringify(config, null, 2) + "\n",
       description: `repo: "${answers.repo}"`,
     },
   ];
@@ -357,14 +357,14 @@ async function createConsumerConfig(
     showDryRunOutput(filesToCreate);
   } else {
     await writeFiles(filesToCreate);
-    showNextSteps('consumer', answers);
+    showNextSteps("consumer", answers);
   }
 }
 
 function showDryRunOutput(files: FileToCreate[]): void {
-  log.message('');
-  log.step('Would create the following files:');
-  log.message('');
+  log.message("");
+  log.step("Would create the following files:");
+  log.message("");
 
   for (const file of files) {
     log.message(`  ${file.path}`);
@@ -373,7 +373,7 @@ function showDryRunOutput(files: FileToCreate[]): void {
     }
   }
 
-  log.message('');
+  log.message("");
 }
 
 async function writeFiles(files: FileToCreate[]): Promise<void> {
@@ -386,21 +386,21 @@ async function writeFiles(files: FileToCreate[]): Promise<void> {
 }
 
 function showNextSteps(
-  mode: 'producer' | 'consumer',
-  answers: ProducerWizardAnswers | ConsumerWizardAnswers
+  mode: "producer" | "consumer",
+  answers: ProducerWizardAnswers | ConsumerWizardAnswers,
 ): void {
-  log.message('');
-  log.step('Next steps:');
+  log.message("");
+  log.step("Next steps:");
 
-  if (mode === 'producer') {
+  if (mode === "producer") {
     const producerAnswers = answers as ProducerWizardAnswers;
     log.message(
-      `  1. Edit ${producerAnswers.tokens}/colors/primitives.json with your design tokens`
+      `  1. Edit ${producerAnswers.tokens}/colors/primitives.json with your design tokens`,
     );
-    log.message('  2. Run: npx clafoutis generate');
-    log.message('  3. Push to GitHub - releases will be created automatically');
+    log.message("  2. Run: npx clafoutis generate");
+    log.message("  3. Push to GitHub - releases will be created automatically");
   } else {
-    log.message('  1. Run: npx clafoutis sync');
-    log.message('  2. Add .clafoutis/cache to .gitignore');
+    log.message("  1. Run: npx clafoutis sync");
+    log.message("  2. Add .clafoutis/cache to .gitignore");
   }
 }

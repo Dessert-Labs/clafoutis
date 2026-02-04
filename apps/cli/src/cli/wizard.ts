@@ -1,6 +1,6 @@
-import * as p from '@clack/prompts';
+import * as p from "@clack/prompts";
 
-import { validatePath, validateRepo } from './validation.js';
+import { validatePath, validateRepo } from "./validation";
 
 export interface ProducerWizardAnswers {
   generators: string[];
@@ -14,14 +14,14 @@ export interface ConsumerWizardAnswers {
   files: Record<string, string>;
 }
 
-export type WizardMode = 'producer' | 'consumer';
+export type WizardMode = "producer" | "consumer";
 
 /**
  * Displays the intro banner for the wizard session.
  * Shows "(DRY RUN)" suffix when in dry-run mode.
  */
 export function showIntro(dryRun = false): void {
-  const suffix = dryRun ? ' (DRY RUN)' : '';
+  const suffix = dryRun ? " (DRY RUN)" : "";
   p.intro(`Clafoutis - GitOps Design Token Generator${suffix}`);
 }
 
@@ -38,17 +38,17 @@ export function showOutro(message: string): void {
  */
 export async function selectMode(): Promise<WizardMode | null> {
   const mode = await p.select({
-    message: 'What would you like to set up?',
+    message: "What would you like to set up?",
     options: [
       {
-        value: 'producer',
-        label: 'Producer',
-        hint: 'I maintain a design system',
+        value: "producer",
+        label: "Producer",
+        hint: "I maintain a design system",
       },
       {
-        value: 'consumer',
-        label: 'Consumer',
-        hint: 'I consume tokens from a design system',
+        value: "consumer",
+        label: "Consumer",
+        hint: "I consume tokens from a design system",
       },
     ],
   });
@@ -70,43 +70,43 @@ export async function runProducerWizard(): Promise<ProducerWizardAnswers | null>
     {
       generators: () =>
         p.multiselect({
-          message: 'Which generators would you like to enable?',
+          message: "Which generators would you like to enable?",
           options: [
-            { value: 'tailwind', label: 'Tailwind CSS', hint: 'recommended' },
-            { value: 'figma', label: 'Figma Variables' },
+            { value: "tailwind", label: "Tailwind CSS", hint: "recommended" },
+            { value: "figma", label: "Figma Variables" },
           ],
           required: true,
-          initialValues: ['tailwind'],
+          initialValues: ["tailwind"],
         }),
 
       tokens: () =>
         p.text({
-          message: 'Where are your design tokens located?',
-          placeholder: './tokens',
-          initialValue: './tokens',
+          message: "Where are your design tokens located?",
+          placeholder: "./tokens",
+          initialValue: "./tokens",
           validate: validatePath,
         }),
 
       output: () =>
         p.text({
-          message: 'Where should generated files be output?',
-          placeholder: './build',
-          initialValue: './build',
+          message: "Where should generated files be output?",
+          placeholder: "./build",
+          initialValue: "./build",
           validate: validatePath,
         }),
 
       workflow: () =>
         p.confirm({
-          message: 'Create GitHub Actions workflow for auto-releases?',
+          message: "Create GitHub Actions workflow for auto-releases?",
           initialValue: true,
         }),
     },
     {
       onCancel: () => {
-        p.cancel('Setup cancelled.');
+        p.cancel("Setup cancelled.");
         process.exit(0);
       },
-    }
+    },
   );
 
   return answers as ProducerWizardAnswers;
@@ -119,30 +119,30 @@ export async function runProducerWizard(): Promise<ProducerWizardAnswers | null>
  */
 export async function runConsumerWizard(): Promise<ConsumerWizardAnswers | null> {
   const repo = await p.text({
-    message: 'GitHub repository (org/repo):',
-    placeholder: 'Acme/design-system',
+    message: "GitHub repository (org/repo):",
+    placeholder: "Acme/design-system",
     validate: validateRepo,
   });
 
   if (p.isCancel(repo)) {
-    p.cancel('Setup cancelled.');
+    p.cancel("Setup cancelled.");
     process.exit(0);
   }
 
   const filesInput = await p.text({
-    message: 'Which files do you want to sync? (comma-separated)',
-    placeholder: 'tailwind.base.css, tailwind.config.js',
-    initialValue: 'tailwind.base.css, tailwind.config.js',
+    message: "Which files do you want to sync? (comma-separated)",
+    placeholder: "tailwind.base.css, tailwind.config.js",
+    initialValue: "tailwind.base.css, tailwind.config.js",
   });
 
   if (p.isCancel(filesInput)) {
-    p.cancel('Setup cancelled.');
+    p.cancel("Setup cancelled.");
     process.exit(0);
   }
 
   const fileNames = (filesInput as string)
-    .split(',')
-    .map(f => f.trim())
+    .split(",")
+    .map((f) => f.trim())
     .filter(Boolean);
 
   const files: Record<string, string> = {};
@@ -157,7 +157,7 @@ export async function runConsumerWizard(): Promise<ConsumerWizardAnswers | null>
     });
 
     if (p.isCancel(dest)) {
-      p.cancel('Setup cancelled.');
+      p.cancel("Setup cancelled.");
       process.exit(0);
     }
 
@@ -177,13 +177,13 @@ export async function runConsumerWizard(): Promise<ConsumerWizardAnswers | null>
  * - Other files go to project root
  */
 function suggestDestination(fileName: string): string {
-  if (fileName.includes('tailwind.config')) {
-    return './tailwind.config.js';
+  if (fileName.includes("tailwind.config")) {
+    return "./tailwind.config.js";
   }
-  if (fileName.includes('.css')) {
+  if (fileName.includes(".css")) {
     return `./src/styles/${fileName}`;
   }
-  if (fileName.includes('.scss')) {
+  if (fileName.includes(".scss")) {
     return `./src/styles/${fileName}`;
   }
   return `./${fileName}`;
@@ -195,17 +195,17 @@ function suggestDestination(fileName: string): string {
  * @returns true if user wants to run the wizard, false otherwise.
  */
 export async function offerWizard(
-  configType: 'producer' | 'consumer'
+  configType: "producer" | "consumer",
 ): Promise<boolean> {
   p.log.error(`Configuration not found: .clafoutis/${configType}.json`);
 
   const runWizard = await p.confirm({
-    message: 'Would you like to create one now?',
+    message: "Would you like to create one now?",
     initialValue: true,
   });
 
   if (p.isCancel(runWizard)) {
-    p.cancel('Operation cancelled.');
+    p.cancel("Operation cancelled.");
     process.exit(0);
   }
 

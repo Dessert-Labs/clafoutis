@@ -1,6 +1,6 @@
-import fs from 'fs/promises';
+import fs from "fs/promises";
 
-const CACHE_DIR = '.clafoutis';
+const CACHE_DIR = ".clafoutis";
 const CACHE_FILE = `${CACHE_DIR}/cache`;
 
 /**
@@ -10,11 +10,11 @@ const CACHE_FILE = `${CACHE_DIR}/cache`;
  */
 export async function readCache(): Promise<string | null> {
   try {
-    return (await fs.readFile(CACHE_FILE, 'utf-8')).trim();
+    return (await fs.readFile(CACHE_FILE, "utf-8")).trim();
   } catch (err: unknown) {
     if (
       err instanceof Error &&
-      (err as NodeJS.ErrnoException).code === 'ENOENT'
+      (err as NodeJS.ErrnoException).code === "ENOENT"
     ) {
       return null;
     }

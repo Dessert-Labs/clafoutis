@@ -1,11 +1,10 @@
-#!/usr/bin/env node
-import * as p from '@clack/prompts';
-import { Command } from 'commander';
+import * as p from "@clack/prompts";
+import { Command } from "commander";
 
-import { generateCommand } from './commands/generate.js';
-import { initCommand } from './commands/init.js';
-import { syncCommand } from './commands/sync.js';
-import { ClafoutisError } from './utils/errors.js';
+import { generateCommand } from "./commands/generate";
+import { initCommand } from "./commands/init";
+import { syncCommand } from "./commands/sync";
+import { ClafoutisError } from "./utils/errors";
 
 const program = new Command();
 
@@ -28,7 +27,7 @@ function displayError(err: ClafoutisError): void {
  * Wraps a command action with error handling for ClafoutisError instances.
  */
 function withErrorHandling<T>(
-  fn: (options: T) => Promise<void>
+  fn: (options: T) => Promise<void>,
 ): (options: T) => Promise<void> {
   return async (options: T): Promise<void> => {
     try {
@@ -54,76 +53,76 @@ function handleUnexpectedError(err: unknown): void {
     if (process.stdin.isTTY) {
       p.log.error(`Unexpected error: ${message}`);
       p.log.info(
-        'Please report this issue at: https://github.com/Dessert-Labs/clafoutis/issues'
+        "Please report this issue at: https://github.com/Dessert-Labs/clafoutis/issues",
       );
     } else {
       console.error(`\nUnexpected error: ${message}\n`);
       console.error(
-        'Please report this issue at: https://github.com/Dessert-Labs/clafoutis/issues'
+        "Please report this issue at: https://github.com/Dessert-Labs/clafoutis/issues",
       );
     }
   }
   process.exit(1);
 }
 
-process.on('uncaughtException', handleUnexpectedError);
+process.on("uncaughtException", handleUnexpectedError);
 
-process.on('unhandledRejection', (reason: unknown) => {
+process.on("unhandledRejection", (reason: unknown) => {
   handleUnexpectedError(reason);
 });
 
 program
-  .name('clafoutis')
-  .description('GitOps powered design system - generate and sync design tokens')
-  .version('0.1.0');
+  .name("clafoutis")
+  .description("GitOps powered design system - generate and sync design tokens")
+  .version("0.1.0");
 
 program
-  .command('generate')
-  .description('Generate platform outputs from design tokens (for producers)')
+  .command("generate")
+  .description("Generate platform outputs from design tokens (for producers)")
   .option(
-    '-c, --config <path>',
-    'Path to config file',
-    '.clafoutis/producer.json'
+    "-c, --config <path>",
+    "Path to config file",
+    ".clafoutis/producer.json",
   )
-  .option('--tailwind', 'Generate Tailwind output')
-  .option('--figma', 'Generate Figma variables')
-  .option('-o, --output <dir>', 'Output directory', './build')
-  .option('--dry-run', 'Preview changes without writing files')
+  .option("--tailwind", "Generate Tailwind output")
+  .option("--figma", "Generate Figma variables")
+  .option("-o, --output <dir>", "Output directory", "./build")
+  .option("--dry-run", "Preview changes without writing files")
   .action(withErrorHandling(generateCommand));
 
 program
-  .command('sync')
-  .description('Sync design tokens from GitHub Release (for consumers)')
-  .option('-f, --force', 'Force sync even if versions match')
+  .command("sync")
+  .description("Sync design tokens from GitHub Release (for consumers)")
+  .option("-f, --force", "Force sync even if versions match")
   .option(
-    '-c, --config <path>',
-    'Path to config file',
-    '.clafoutis/consumer.json'
+    "-c, --config <path>",
+    "Path to config file",
+    ".clafoutis/consumer.json",
   )
-  .option('--dry-run', 'Preview changes without writing files')
+  .option("--dry-run", "Preview changes without writing files")
   .action(withErrorHandling(syncCommand));
 
 program
-  .command('init')
-  .description('Initialize Clafoutis configuration')
-  .option('--producer', 'Set up as a design token producer')
-  .option('--consumer', 'Set up as a design token consumer')
-  .option('-r, --repo <repo>', 'GitHub repo for consumer mode (org/name)')
-  .option('-t, --tokens <path>', 'Token directory path (default: ./tokens)')
-  .option('-o, --output <path>', 'Output directory path (default: ./build)')
+  .command("init")
+  .description("Initialize Clafoutis configuration")
+  .option("--producer", "Set up as a design token producer")
+  .option("--consumer", "Set up as a design token consumer")
+  .option("-r, --repo <repo>", "GitHub repo for consumer mode (org/name)")
+  .option("-t, --tokens <path>", "Token directory path (default: ./tokens)")
+  .option("-o, --output <path>", "Output directory path (default: ./build)")
   .option(
-    '-g, --generators <list>',
-    'Comma-separated generators: tailwind, figma'
+    "-g, --generators <list>",
+    "Comma-separated generators: tailwind, figma",
   )
-  .option('--workflow', 'Create GitHub Actions workflow (default: true)')
-  .option('--no-workflow', 'Skip GitHub Actions workflow')
+  .option("--workflow", "Create GitHub Actions workflow (default: true)")
+  .option("--no-workflow", "Skip GitHub Actions workflow")
   .option(
-    '--files <mapping>',
-    'File mappings for consumer: asset:dest,asset:dest'
+    "--files <mapping>",
+    "File mappings for consumer: asset:dest,asset:dest",
   )
-  .option('--force', 'Overwrite existing configuration')
-  .option('--dry-run', 'Preview changes without writing files')
-  .option('--non-interactive', 'Skip prompts, use defaults or flags')
+  .option("--force", "Overwrite existing configuration")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--non-interactive", "Skip prompts, use defaults or flags")
   .action(withErrorHandling(initCommand));
 
 program.parse();

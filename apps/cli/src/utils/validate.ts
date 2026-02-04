@@ -1,10 +1,6 @@
-import { createRequire } from 'module';
-
-import { validateConfig } from '../cli/validation.js';
-
-const require = createRequire(import.meta.url);
-const consumerSchema = require('../../schemas/consumer-config.json');
-const producerSchema = require('../../schemas/producer-config.json');
+import consumerSchema from "../../schemas/consumer-config.json";
+import producerSchema from "../../schemas/producer-config.json";
+import { validateConfig } from "../cli/validation";
 
 /**
  * Validates a consumer configuration object against the JSON schema.
@@ -15,7 +11,7 @@ export function validateConsumerConfig(config: unknown): void {
   validateConfig(
     config as Record<string, unknown>,
     consumerSchema,
-    '.clafoutis/consumer.json'
+    ".clafoutis/consumer.json",
   );
 }
 
@@ -28,6 +24,6 @@ export function validateProducerConfig(config: unknown): void {
   validateConfig(
     config as Record<string, unknown>,
     producerSchema,
-    '.clafoutis/producer.json'
+    ".clafoutis/producer.json",
   );
 }

@@ -15,20 +15,20 @@ export class ClafoutisError extends Error {
   constructor(
     public title: string,
     public detail: string,
-    public suggestion?: string
+    public suggestion?: string,
   ) {
     super(`${title}: ${detail}`);
-    this.name = 'ClafoutisError';
+    this.name = "ClafoutisError";
   }
 
   /**
    * Formats the error for display in the terminal with colors and structure.
    */
   format(): string {
-    let output = `\n${colors.red('Error:')} ${this.title}\n`;
+    let output = `\n${colors.red("Error:")} ${this.title}\n`;
     output += `\n${this.detail}\n`;
     if (this.suggestion) {
-      output += `\n${colors.cyan('Suggestion:')} ${this.suggestion}\n`;
+      output += `\n${colors.cyan("Suggestion:")} ${this.suggestion}\n`;
     }
     return output;
   }
@@ -39,12 +39,12 @@ export class ClafoutisError extends Error {
  */
 export function configNotFoundError(
   configPath: string,
-  isConsumer: boolean
+  isConsumer: boolean,
 ): ClafoutisError {
   return new ClafoutisError(
-    'Configuration not found',
+    "Configuration not found",
     `Could not find ${configPath}`,
-    `Run: npx clafoutis init --${isConsumer ? 'consumer' : 'producer'}`
+    `Run: npx clafoutis init --${isConsumer ? "consumer" : "producer"}`,
   );
 }
 
@@ -53,9 +53,9 @@ export function configNotFoundError(
  */
 export function invalidRepoError(repo: string): ClafoutisError {
   return new ClafoutisError(
-    'Invalid repository format',
+    "Invalid repository format",
     `"${repo}" is not a valid GitHub repository`,
-    'Use format: org/repo (e.g., "YourOrg/design-system")'
+    'Use format: org/repo (e.g., "YourOrg/design-system")',
   );
 }
 
@@ -64,12 +64,12 @@ export function invalidRepoError(repo: string): ClafoutisError {
  */
 export function releaseNotFoundError(
   version: string,
-  repo: string
+  repo: string,
 ): ClafoutisError {
   return new ClafoutisError(
-    'Release not found',
+    "Release not found",
     `Version ${version} does not exist in ${repo}`,
-    `Check available releases: gh release list -R ${repo}`
+    `Check available releases: gh release list -R ${repo}`,
   );
 }
 
@@ -78,9 +78,9 @@ export function releaseNotFoundError(
  */
 export function authRequiredError(): ClafoutisError {
   return new ClafoutisError(
-    'Authentication required',
-    'CLAFOUTIS_REPO_TOKEN is required for private repositories',
-    'Set the environment variable: export CLAFOUTIS_REPO_TOKEN=ghp_xxx'
+    "Authentication required",
+    "CLAFOUTIS_REPO_TOKEN is required for private repositories",
+    "Set the environment variable: export CLAFOUTIS_REPO_TOKEN=ghp_xxx",
   );
 }
 
@@ -89,9 +89,9 @@ export function authRequiredError(): ClafoutisError {
  */
 export function generatorNotFoundError(name: string): ClafoutisError {
   return new ClafoutisError(
-    'Generator not found',
+    "Generator not found",
     `Built-in generator "${name}" does not exist`,
-    'Available generators: tailwind, figma'
+    "Available generators: tailwind, figma",
   );
 }
 
@@ -100,12 +100,12 @@ export function generatorNotFoundError(name: string): ClafoutisError {
  */
 export function pluginLoadError(
   pluginPath: string,
-  errorMessage: string
+  errorMessage: string,
 ): ClafoutisError {
   return new ClafoutisError(
-    'Plugin load failed',
+    "Plugin load failed",
     `Could not load generator from ${pluginPath}: ${errorMessage}`,
-    'Ensure the file exports a "generate" function'
+    'Ensure the file exports a "generate" function',
   );
 }
 
@@ -114,9 +114,9 @@ export function pluginLoadError(
  */
 export function tokensDirNotFoundError(tokensDir: string): ClafoutisError {
   return new ClafoutisError(
-    'Tokens directory not found',
+    "Tokens directory not found",
     `Directory "${tokensDir}" does not exist`,
-    'Create the directory and add token JSON files'
+    "Create the directory and add token JSON files",
   );
 }
 
@@ -125,9 +125,9 @@ export function tokensDirNotFoundError(tokensDir: string): ClafoutisError {
  */
 export function configExistsError(configPath: string): ClafoutisError {
   return new ClafoutisError(
-    'Configuration already exists',
+    "Configuration already exists",
     configPath,
-    'Use --force to overwrite the existing configuration'
+    "Use --force to overwrite the existing configuration",
   );
 }
 
@@ -136,9 +136,9 @@ export function configExistsError(configPath: string): ClafoutisError {
  */
 export function networkError(url: string, reason: string): ClafoutisError {
   return new ClafoutisError(
-    'Network error',
+    "Network error",
     `Failed to fetch ${url}: ${reason}`,
-    'Check your network connection and ensure the repository is accessible'
+    "Check your network connection and ensure the repository is accessible",
   );
 }
 
@@ -147,8 +147,8 @@ export function networkError(url: string, reason: string): ClafoutisError {
  */
 export function invalidFlagsError(errors: string[]): ClafoutisError {
   return new ClafoutisError(
-    'Invalid flags',
-    errors.join('\n'),
-    'Fix the invalid flags and try again'
+    "Invalid flags",
+    errors.join("\n"),
+    "Fix the invalid flags and try again",
   );
 }
