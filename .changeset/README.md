@@ -2,23 +2,19 @@
 
 This folder contains changesets that describe changes to published packages. Changesets are used to version packages and generate changelogs automatically.
 
-## Adding a changeset
+## Adding a Changeset
 
-Run the interactive command:
-
-```bash
-pnpm changeset
-```
-
-Or create a markdown file manually in this directory with the following format:
+Create a markdown file in this directory with the following format:
 
 ```markdown
 ---
-"clafoutis": minor
+"@clafoutis/cli": minor
 ---
 
 Brief description of the change.
 ```
+
+The frontmatter specifies which package(s) are affected and the version bump type. The body describes what changed.
 
 ## Semantic Versioning Guide
 
@@ -30,64 +26,71 @@ Choose the correct bump type based on the nature of your change:
 | `minor` | New features | New command, new flag, new generator |
 | `patch` | Bug fixes | Fixed crash, corrected output, documentation fix |
 
-## Changeset Writing Guidelines
+## Changeset Examples
 
-### Structure
-
-A changeset should contain:
-1. The affected package(s) and bump type in the frontmatter
-2. A concise summary (1-2 sentences) in the body
-
-### Good Examples
+### Single Package
 
 ```markdown
 ---
-"clafoutis": minor
----
-
-Add interactive wizard to `init` command with guided setup for producer and consumer modes.
-```
-
-```markdown
----
-"clafoutis": patch
+"@clafoutis/cli": patch
 ---
 
 Fix config validation to correctly handle nested generator options.
 ```
 
-```markdown
----
-"clafoutis": major
----
-
-Remove deprecated `--css` generator flag. Use `--tailwind` instead.
-```
-
 ### Multiple Packages
 
-When changes affect multiple packages:
+When changes affect multiple packages, list them all:
 
 ```markdown
 ---
-"clafoutis": minor
+"@clafoutis/cli": minor
 "@clafoutis/generators": minor
 ---
 
 Add Figma generator with variable export support.
 ```
 
-### What NOT to Include
+### Breaking Change
+
+```markdown
+---
+"@clafoutis/cli": major
+---
+
+Remove deprecated `--css` generator flag. Use `--tailwind` instead.
+```
+
+## Package Names
+
+Use the exact npm package names in changesets:
+
+| Package | Name |
+|---------|------|
+| CLI | `@clafoutis/cli` |
+| Generators | `@clafoutis/generators` |
+
+Internal packages are ignored and don't need changesets:
+- `@clafoutis/eslint-config`
+- `@clafoutis/prettier-config`
+- `@clafoutis/shared`
+- `@clafoutis/vitest-config`
+
+## What NOT to Include
 
 - Internal refactoring that doesn't affect users (no changeset needed)
 - Changes to dev dependencies only (no changeset needed)
-- Changes to internal packages like `@clafoutis/eslint-config` (ignored in config)
+- Changes to ignored internal packages (no changeset needed)
 
-## Versioning Workflow
+## How the Release Bot Works
 
-When changes are merged to main, the release bot will create a "Version Packages" PR that:
-- Bumps the package version based on changesets
-- Updates the CHANGELOG.md with all changes
-- Prepares for npm publishing
+When changes with changesets are merged to `main`:
 
-Once the "Version Packages" PR is merged, the release bot will automatically publish to npm.
+1. The release bot detects pending changesets
+2. Creates a "Version Packages" PR that:
+   - Bumps package versions based on changeset types
+   - Updates CHANGELOG.md with all changes
+   - Removes consumed changeset files
+3. When the "Version Packages" PR is merged:
+   - Packages are automatically published to npm
+   - Git tags are created for each release
