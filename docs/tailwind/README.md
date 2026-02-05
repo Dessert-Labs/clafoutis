@@ -24,7 +24,7 @@ The easiest way to integrate tokens is using the Clafoutis CLI to sync from GitH
 
 ```bash
 # Install Clafoutis
-npm install -D clafoutis
+npm install -D @clafoutis/cli
 
 # Initialize consumer config
 npx clafoutis init --consumer --repo YourOrg/design-system

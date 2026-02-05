@@ -61,7 +61,7 @@ mkdir my-design-system && cd my-design-system
 git init
 
 # Initialize as producer
-npm install -D clafoutis
+npm install -D @clafoutis/cli
 npx clafoutis init --producer
 
 # Edit your tokens
@@ -274,7 +274,7 @@ export const generate: GeneratorPlugin = async ({ tokensDir, outputDir, StyleDic
 
 ```bash
 # In your application repo
-npm install -D clafoutis
+npm install -D @clafoutis/cli
 npx clafoutis init --consumer --repo YourOrg/design-system
 
 # Edit .clafoutis/consumer.json to set the version you want

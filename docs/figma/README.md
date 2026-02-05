@@ -305,7 +305,7 @@ This method is tedious but requires no plugins or API access.
 
 ```bash
 # Install Clafoutis
-npm install -D clafoutis
+npm install -D @clafoutis/cli
 
 # Initialize as consumer
 npx clafoutis init --consumer --repo YourOrg/design-system

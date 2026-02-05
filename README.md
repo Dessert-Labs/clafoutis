@@ -58,7 +58,7 @@ Tokens are committed to your repo. No runtime dependencies. No build-time networ
 ### Installation
 
 ```bash
-npm install -D clafoutis
+npm install -D @clafoutis/cli
 ```
 
 ### For Producers (Design System Teams)

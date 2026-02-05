@@ -27,7 +27,7 @@ jobs:
           node-version: '22'
 
       - name: Install Clafoutis
-        run: npm install -D clafoutis
+        run: npm install -D @clafoutis/cli
 
       - name: Generate tokens
         run: npx clafoutis generate
