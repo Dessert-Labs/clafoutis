@@ -2,7 +2,7 @@
   "name": "@clafoutis/generators",
   "version": "1.0.0",
   "description": "Design token generators for Clafoutis",
-  "author": "Dessert",
+  "author": "Dessert Labs",
   "license": "BUSL-1.1",
   "type": "module",
   "main": "./dist/index.js",
