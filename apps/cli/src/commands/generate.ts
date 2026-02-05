@@ -1,20 +1,20 @@
-import { logger } from '@clafoutis/shared';
-import path from 'path';
-import StyleDictionary from 'style-dictionary';
-import { pathToFileURL } from 'url';
+import { logger } from "@clafoutis/shared";
+import path from "path";
+import StyleDictionary from "style-dictionary";
+import { pathToFileURL } from "url";
 
-import { offerWizard } from '../cli/wizard.js';
-import type { GeneratorContext, GeneratorPlugin } from '../types.js';
-import { fileExists, readProducerConfig } from '../utils/config.js';
+import { offerWizard } from "../cli/wizard";
+import type { GeneratorContext, GeneratorPlugin } from "../types";
+import { fileExists, readProducerConfig } from "../utils/config";
 import {
   ClafoutisError,
   configNotFoundError,
   generatorNotFoundError,
   pluginLoadError,
   tokensDirNotFoundError,
-} from '../utils/errors.js';
-import { validateProducerConfig } from '../utils/validate.js';
-import { initCommand } from './init.js';
+} from "../utils/errors";
+import { validateProducerConfig } from "../utils/validate";
+import { initCommand } from "./init";
 
 interface GenerateOptions {
   config?: string;
@@ -36,8 +36,8 @@ interface GeneratorModule {
 async function loadPlugin(pluginPath: string): Promise<GeneratorModule> {
   const absolutePath = path.resolve(process.cwd(), pluginPath);
 
-  if (pluginPath.endsWith('.ts')) {
-    const { register } = await import('tsx/esm/api');
+  if (pluginPath.endsWith(".ts")) {
+    const { register } = await import("tsx/esm/api");
     register();
   }
 
@@ -49,21 +49,21 @@ async function loadPlugin(pluginPath: string): Promise<GeneratorModule> {
  * Reads configuration, validates it, and runs enabled generators.
  */
 export async function generateCommand(options: GenerateOptions): Promise<void> {
-  const configPath = options.config || '.clafoutis/producer.json';
+  const configPath = options.config || ".clafoutis/producer.json";
 
   let config = await readProducerConfig(configPath);
 
   if (!config) {
     if (await fileExists(configPath)) {
       throw new ClafoutisError(
-        'Invalid configuration',
+        "Invalid configuration",
         `Could not parse ${configPath}`,
-        'Ensure the file contains valid JSON'
+        "Ensure the file contains valid JSON",
       );
     }
 
     if (process.stdin.isTTY) {
-      const shouldRunWizard = await offerWizard('producer');
+      const shouldRunWizard = await offerWizard("producer");
       if (shouldRunWizard) {
         await initCommand({ producer: true });
         config = await readProducerConfig(configPath);
@@ -97,8 +97,8 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
   }
 
   // Resolve paths relative to current working directory (project root)
-  const tokensDir = path.resolve(process.cwd(), config.tokens || './tokens');
-  const outputDir = path.resolve(process.cwd(), config.output || './build');
+  const tokensDir = path.resolve(process.cwd(), config.tokens || "./tokens");
+  const outputDir = path.resolve(process.cwd(), config.output || "./build");
 
   if (!(await fileExists(tokensDir))) {
     throw tokensDirNotFoundError(tokensDir);
@@ -108,11 +108,11 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
   const generators = config.generators || { tailwind: true, figma: true };
 
   if (options.dryRun) {
-    logger.info('[dry-run] Would read tokens from: ' + tokensDir);
-    logger.info('[dry-run] Would write to: ' + outputDir);
+    logger.info("[dry-run] Would read tokens from: " + tokensDir);
+    logger.info("[dry-run] Would write to: " + outputDir);
     for (const [name, value] of Object.entries(generators)) {
       if (value !== false) {
-        const type = typeof value === 'string' ? 'custom' : 'built-in';
+        const type = typeof value === "string" ? "custom" : "built-in";
         logger.info(`[dry-run] Would run generator: ${name} (${type})`);
       }
     }
@@ -132,7 +132,7 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     try {
       let generatorModule: GeneratorModule;
 
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         try {
           generatorModule = await loadPlugin(value);
         } catch (err) {
@@ -140,10 +140,10 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
           throw pluginLoadError(value, errorMessage);
         }
 
-        if (typeof generatorModule.generate !== 'function') {
+        if (typeof generatorModule.generate !== "function") {
           throw pluginLoadError(
             value,
-            'Module does not export a "generate" function'
+            'Module does not export a "generate" function',
           );
         }
       } else {
@@ -152,8 +152,8 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
           string,
           () => Promise<GeneratorModule>
         > = {
-          tailwind: async () => import('@clafoutis/generators/tailwind'),
-          figma: async () => import('@clafoutis/generators/figma'),
+          tailwind: async () => import("@clafoutis/generators/tailwind"),
+          figma: async () => import("@clafoutis/generators/figma"),
         };
 
         if (!builtInGenerators[name]) {
@@ -188,11 +188,11 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
 
   if (hadFailure) {
     throw new ClafoutisError(
-      'Generation failed',
-      'One or more generators failed',
-      'Check the error messages above and fix the issues'
+      "Generation failed",
+      "One or more generators failed",
+      "Check the error messages above and fix the issues",
     );
   }
 
-  logger.success('Generation complete');
+  logger.success("Generation complete");
 }

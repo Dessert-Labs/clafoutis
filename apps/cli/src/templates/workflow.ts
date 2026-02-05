@@ -75,5 +75,5 @@ jobs:
  * Returns the standard path for the Clafoutis release workflow.
  */
 export function getWorkflowPath(): string {
-  return '.github/workflows/clafoutis-release.yml';
+  return ".github/workflows/clafoutis-release.yml";
 }

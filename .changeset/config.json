@@ -6,6 +6,5 @@
   "linked": [],
   "access": "public",
   "baseBranch": "main",
-  "updateInternalDependencies": "patch",
-  "ignore": ["@clafoutis/eslint-config", "@clafoutis/prettier-config", "@clafoutis/vitest-config"]
+  "updateInternalDependencies": "patch"
 }

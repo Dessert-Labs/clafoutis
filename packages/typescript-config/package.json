@@ -1,0 +1,14 @@
+{
+  "name": "@clafoutis/typescript-config",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared TypeScript configuration for Clafoutis",
+  "type": "module",
+  "exports": {
+    "./base.json": "./base.json",
+    "./library.json": "./library.json"
+  },
+  "files": [
+    "*.json"
+  ]
+}

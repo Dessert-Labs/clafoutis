@@ -1,7 +1,7 @@
-import * as p from '@clack/prompts';
-import { Ajv, type ErrorObject } from 'ajv';
+import * as p from "@clack/prompts";
+import { Ajv, type ErrorObject } from "ajv";
 
-import { ClafoutisError } from '../utils/errors.js';
+import { ClafoutisError } from "../utils/errors";
 
 /**
  * Validates a GitHub repository format (org/repo-name).
@@ -9,10 +9,10 @@ import { ClafoutisError } from '../utils/errors.js';
  */
 export function validateRepo(value: string | undefined): string | undefined {
   if (!value) {
-    return 'Repository is required';
+    return "Repository is required";
   }
   if (!/^[\w-]+\/[\w.-]+$/.test(value)) {
-    return 'Repository must be in format: org/repo-name';
+    return "Repository must be in format: org/repo-name";
   }
   return undefined;
 }
@@ -24,9 +24,9 @@ export function validateRepo(value: string | undefined): string | undefined {
  */
 export function validatePath(value: string | undefined): string | undefined {
   if (!value) {
-    return 'Path is required';
+    return "Path is required";
   }
-  if (!value.startsWith('./') && !value.startsWith('/') && value !== '.') {
+  if (!value.startsWith("./") && !value.startsWith("/") && value !== ".") {
     return 'Path must start with ./ or /, or be "."';
   }
   return undefined;
@@ -38,13 +38,13 @@ export function validatePath(value: string | undefined): string | undefined {
  */
 export function required(value: string | undefined): string | undefined {
   if (!value || !value.trim()) {
-    return 'This field is required';
+    return "This field is required";
   }
   return undefined;
 }
 
 const DEPRECATED_FIELDS: Record<string, string> = {
-  'generators.css': 'Use "generators.tailwind" instead',
+  "generators.css": 'Use "generators.tailwind" instead',
   buildDir: 'Renamed to "output"',
 };
 
@@ -57,19 +57,19 @@ const DEPRECATED_FIELDS: Record<string, string> = {
 export function validateConfig(
   config: Record<string, unknown>,
   schema: object,
-  configPath: string
+  configPath: string,
 ): void {
   const ajv = new Ajv({ allErrors: true, strict: false });
   const validate = ajv.compile(schema);
 
   if (!validate(config)) {
     const errors = validate.errors
-      ?.map((e: ErrorObject) => `  - ${e.instancePath || 'root'}: ${e.message}`)
-      .join('\n');
+      ?.map((e: ErrorObject) => `  - ${e.instancePath || "root"}: ${e.message}`)
+      .join("\n");
     throw new ClafoutisError(
-      'Invalid configuration',
+      "Invalid configuration",
       `${configPath}:\n${errors}`,
-      'Check the config against the schema or run "clafoutis init --force" to regenerate'
+      'Check the config against the schema or run "clafoutis init --force" to regenerate',
     );
   }
 
@@ -78,10 +78,10 @@ export function validateConfig(
     const unknownFields = findUnknownFields(config, schemaObj.properties);
     if (unknownFields.length > 0) {
       p.log.warn(
-        `Unknown fields in ${configPath}: ${unknownFields.join(', ')}`
+        `Unknown fields in ${configPath}: ${unknownFields.join(", ")}`,
       );
       p.log.info(
-        'These fields will be ignored. Check for typos or outdated config.'
+        "These fields will be ignored. Check for typos or outdated config.",
       );
     }
   }
@@ -100,7 +100,7 @@ export function validateConfig(
 function findUnknownFields(
   config: Record<string, unknown>,
   schemaProperties: Record<string, unknown>,
-  prefix = ''
+  prefix = "",
 ): string[] {
   const unknown: string[] = [];
 
@@ -117,7 +117,7 @@ function findUnknownFields(
 
       if (
         value &&
-        typeof value === 'object' &&
+        typeof value === "object" &&
         !Array.isArray(value) &&
         schemaProp?.properties
       ) {
@@ -125,8 +125,8 @@ function findUnknownFields(
           ...findUnknownFields(
             value as Record<string, unknown>,
             schemaProp.properties,
-            fullPath
-          )
+            fullPath,
+          ),
         );
       }
     }
@@ -140,11 +140,11 @@ function findUnknownFields(
  * Example: hasField(config, 'generators.css') checks config.generators.css
  */
 function hasField(config: Record<string, unknown>, path: string): boolean {
-  const parts = path.split('.');
+  const parts = path.split(".");
   let current: unknown = config;
 
   for (const part of parts) {
-    if (current && typeof current === 'object' && part in current) {
+    if (current && typeof current === "object" && part in current) {
       current = (current as Record<string, unknown>)[part];
     } else {
       return false;
@@ -180,29 +180,29 @@ export function validateProducerFlags(options: {
   }
 
   if (options.generators) {
-    const builtInGenerators = ['tailwind', 'figma'];
-    const generators = options.generators.split(',').map(g => g.trim());
+    const builtInGenerators = ["tailwind", "figma"];
+    const generators = options.generators.split(",").map((g) => g.trim());
     for (const gen of generators) {
       // Check if it's a custom generator with path (name:path format)
-      const colonIdx = gen.indexOf(':');
+      const colonIdx = gen.indexOf(":");
       if (colonIdx > 0) {
         // Custom generator: validate name and path are non-empty
         const name = gen.slice(0, colonIdx).trim();
         const pluginPath = gen.slice(colonIdx + 1).trim();
         if (!name) {
           errors.push(
-            `--generators: Custom generator "${gen}" has an empty name`
+            `--generators: Custom generator "${gen}" has an empty name`,
           );
         }
         if (!pluginPath) {
           errors.push(
-            `--generators: Custom generator "${name}" is missing a path`
+            `--generators: Custom generator "${name}" is missing a path`,
           );
         }
       } else if (!builtInGenerators.includes(gen)) {
         // Not a built-in generator and not in name:path format
         errors.push(
-          `--generators: Invalid generator "${gen}". Built-in options: ${builtInGenerators.join(', ')}. For custom generators use "name:./path/to/plugin.js"`
+          `--generators: Invalid generator "${gen}". Built-in options: ${builtInGenerators.join(", ")}. For custom generators use "name:./path/to/plugin.js"`,
         );
       }
     }
@@ -229,11 +229,11 @@ export function validateConsumerFlags(options: {
   }
 
   if (options.files) {
-    const mappings = options.files.split(',');
+    const mappings = options.files.split(",");
     for (const mapping of mappings) {
-      if (!mapping.includes(':')) {
+      if (!mapping.includes(":")) {
         errors.push(
-          `--files: Invalid format "${mapping}". Use format: asset:destination`
+          `--files: Invalid format "${mapping}". Use format: asset:destination`,
         );
       }
     }

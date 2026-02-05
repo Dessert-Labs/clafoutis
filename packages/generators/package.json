@@ -26,8 +26,8 @@
     "config.json"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "lint:check": "eslint src",
     "lint:write": "eslint src --fix",
     "format:check": "prettier --check src",
@@ -42,12 +42,9 @@
     "tinycolor2": "^1.6.0"
   },
   "devDependencies": {
-    "@clafoutis/eslint-config": "workspace:*",
-    "@clafoutis/prettier-config": "workspace:*",
-    "@clafoutis/vitest-config": "workspace:*",
+    "@clafoutis/tsup-config": "workspace:*",
+    "@clafoutis/typescript-config": "workspace:*",
     "@types/node": "^22.15.27",
-    "@types/tinycolor2": "^1.4.6",
-    "typescript": "^5.8.3"
-  },
-  "prettier": "@clafoutis/prettier-config"
+    "@types/tinycolor2": "^1.4.6"
+  }
 }

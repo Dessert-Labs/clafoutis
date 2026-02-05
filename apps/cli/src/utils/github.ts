@@ -1,11 +1,11 @@
-import { logger } from '@clafoutis/shared';
+import { logger } from "@clafoutis/shared";
 
-import type { ClafoutisConfig } from '../types.js';
+import type { ClafoutisConfig } from "../types";
 import {
   authRequiredError,
   ClafoutisError,
   releaseNotFoundError,
-} from './errors.js';
+} from "./errors";
 
 interface GitHubRelease {
   tag_name: string;
@@ -31,20 +31,20 @@ export interface DownloadResult {
  * @throws ClafoutisError if any requested assets are missing or fail to download
  */
 export async function downloadRelease(
-  config: ClafoutisConfig
+  config: ClafoutisConfig,
 ): Promise<DownloadResult> {
   const token = process.env.CLAFOUTIS_REPO_TOKEN;
   const headers: Record<string, string> = {
-    Accept: 'application/vnd.github.v3+json',
-    'User-Agent': 'clafoutis-cli',
+    Accept: "application/vnd.github.v3+json",
+    "User-Agent": "clafoutis-cli",
   };
 
   if (token) {
-    headers['Authorization'] = `token ${token}`;
+    headers["Authorization"] = `token ${token}`;
   }
 
   // Use /releases/latest endpoint for "latest", otherwise use /releases/tags/{tag}
-  const isLatest = config.version === 'latest';
+  const isLatest = config.version === "latest";
   const releaseUrl = isLatest
     ? `https://api.github.com/repos/${config.repo}/releases/latest`
     : `https://api.github.com/repos/${config.repo}/releases/tags/${config.version}`;
@@ -73,7 +73,7 @@ export async function downloadRelease(
   const failedDownloads: string[] = [];
 
   for (const assetName of Object.keys(config.files)) {
-    const asset = release.assets.find(a => a.name === assetName);
+    const asset = release.assets.find((a) => a.name === assetName);
 
     if (!asset) {
       missingAssets.push(assetName);
@@ -82,7 +82,7 @@ export async function downloadRelease(
 
     logger.info(`Downloading ${assetName}...`);
 
-    const downloadHeaders = { ...headers, Accept: 'application/octet-stream' };
+    const downloadHeaders = { ...headers, Accept: "application/octet-stream" };
     const fileRes = await fetch(asset.url, { headers: downloadHeaders });
 
     if (!fileRes.ok) {
@@ -95,18 +95,18 @@ export async function downloadRelease(
 
   const errors: string[] = [];
   if (missingAssets.length > 0) {
-    errors.push(`Assets not found in release: ${missingAssets.join(', ')}`);
+    errors.push(`Assets not found in release: ${missingAssets.join(", ")}`);
   }
   if (failedDownloads.length > 0) {
-    errors.push(`Failed to download: ${failedDownloads.join(', ')}`);
+    errors.push(`Failed to download: ${failedDownloads.join(", ")}`);
   }
 
   if (errors.length > 0) {
-    const availableAssets = release.assets.map(a => a.name).join(', ');
+    const availableAssets = release.assets.map((a) => a.name).join(", ");
     throw new ClafoutisError(
-      'Download failed',
-      errors.join('\n'),
-      `Available assets in ${resolvedTag}: ${availableAssets || 'none'}`
+      "Download failed",
+      errors.join("\n"),
+      `Available assets in ${resolvedTag}: ${availableAssets || "none"}`,
     );
   }
 

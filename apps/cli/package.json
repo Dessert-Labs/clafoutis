@@ -23,8 +23,8 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -45,12 +45,9 @@
     "tsx": "^4.19.4"
   },
   "devDependencies": {
-    "@clafoutis/eslint-config": "workspace:*",
-    "@clafoutis/prettier-config": "workspace:*",
-    "@clafoutis/vitest-config": "workspace:*",
+    "@clafoutis/tsup-config": "workspace:*",
+    "@clafoutis/typescript-config": "workspace:*",
     "@types/node": "^22.15.27",
-    "typescript": "^5.8.3",
     "vitest": "^2.0.0"
-  },
-  "prettier": "@clafoutis/prettier-config"
+  }
 }
