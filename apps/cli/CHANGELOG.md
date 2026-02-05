@@ -1,5 +1,16 @@
 # @clafoutis/cli
 
+## 1.0.2
+
+### Patch Changes
+
+- cbe806b: Fix broken GitHub workflow template: change package name from `clafoutis` to `@clafoutis/cli`
+
+  The generated workflow was failing in CI because `clafoutis` doesn't exist on npm - the correct package name is `@clafoutis/cli`.
+
+- Updated dependencies [a263304]
+  - @clafoutis/generators@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes
