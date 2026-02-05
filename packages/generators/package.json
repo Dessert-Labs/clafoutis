@@ -1,6 +1,6 @@
 {
   "name": "@clafoutis/generators",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Design token generators for Clafoutis",
   "author": "Dessert",
   "license": "BUSL-1.1",
