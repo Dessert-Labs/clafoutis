@@ -1,5 +1,12 @@
 # @clafoutis/cli
 
+## 1.1.1
+
+### Patch Changes
+
+- Updated dependencies [54b87e4]
+  - @clafoutis/generators@1.0.3
+
 ## 1.1.0
 
 ### Minor Changes
