@@ -272,13 +272,13 @@ StyleDictionary.registerFormat({
         cssRef = `var(--${toKebabCase(token.name)})`;
       }
 
-      // Flatten nested color objects
+      // Map token names to Tailwind theme keys
       const segments = token.name.split("-");
-      if (segments[0] === "colors") {
-        const flattenedKey = segments.slice(1).join("-");
-        (partialConfig.theme.extend.colors as Record<string, string>)[
-          flattenedKey
-        ] = cssRef;
+
+      // "color" tokens should go into "colors" (Tailwind's expected key)
+      if (segments[0] === "color") {
+        const colorPath = ["colors", ...segments.slice(1)];
+        setNestedProperty(partialConfig.theme.extend, colorPath, cssRef);
       } else {
         setNestedProperty(partialConfig.theme.extend, segments, cssRef);
       }
