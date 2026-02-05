@@ -257,7 +257,7 @@ async function main(): Promise<void> {
     SD.platforms.figma.transforms.push("figma/reference" as any);
   }
 
-  SD.buildAllPlatforms();
+  await SD.buildAllPlatforms();
   logger.success("Figma variables built!");
 }
 
