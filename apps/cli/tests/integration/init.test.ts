@@ -34,14 +34,27 @@ describe('initCommand', () => {
     it('creates starter token files', async () => {
       await initCommand({ producer: true, nonInteractive: true });
 
-      const colorTokensPath = path.join(
+      // Check primitives (raw color values)
+      const colorPrimitivesPath = path.join(
         tempDir,
         'tokens/colors/primitives.json'
       );
-      const colorTokens = JSON.parse(
-        await fs.readFile(colorTokensPath, 'utf-8')
+      const colorPrimitives = JSON.parse(
+        await fs.readFile(colorPrimitivesPath, 'utf-8')
       );
-      expect(colorTokens.color.primary).toBeDefined();
+      expect(colorPrimitives.color.gray).toBeDefined();
+      expect(colorPrimitives.color.blue).toBeDefined();
+
+      // Check semantics (named colors with meaning)
+      const colorSemanticsPath = path.join(
+        tempDir,
+        'tokens/colors/semantic.json'
+      );
+      const colorSemantics = JSON.parse(
+        await fs.readFile(colorSemanticsPath, 'utf-8')
+      );
+      expect(colorSemantics.color.primary).toBeDefined();
+      expect(colorSemantics.color.neutral).toBeDefined();
 
       const spacingTokensPath = path.join(
         tempDir,

@@ -14,6 +14,8 @@ import path from 'node:path';
 import os from 'node:os';
 
 const MOCK_DESIGN_SYSTEM_REPO = 'Dessert-Labs/mock-design-system';
+// Use a known stable release version for pinned version tests
+const PINNED_VERSION = 'v1.0.3';
 const cliBin = path.resolve(__dirname, '../../dist/index.js');
 
 describe('E2E: mock-design-system → mock-frontend', () => {
@@ -68,10 +70,10 @@ describe('E2E: mock-design-system → mock-frontend', () => {
     expect(tailwindTokens).toContain('colors');
   });
 
-  it('respects version pinning (v1.0.0)', async () => {
+  it(`respects version pinning (${PINNED_VERSION})`, async () => {
     const config = {
       repo: MOCK_DESIGN_SYSTEM_REPO,
-      version: 'v1.0.0',
+      version: PINNED_VERSION,
       files: {
         'tailwind.base.css': 'src/styles/base.css',
       },
@@ -93,7 +95,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
       'utf-8'
     );
 
-    // v1.0.0 has primary-500 as #3b82f6
+    // Should contain primary-500 color
     expect(baseCss).toContain('#3b82f6');
   });
 
@@ -101,7 +103,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
     const hookOutputFile = path.join(tempDir, 'hook-ran.txt');
     const config = {
       repo: MOCK_DESIGN_SYSTEM_REPO,
-      version: 'v1.0.0',
+      version: PINNED_VERSION,
       files: {
         'tailwind.base.css': 'src/styles/base.css',
       },
@@ -126,7 +128,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
   it('handles missing assets gracefully', async () => {
     const config = {
       repo: MOCK_DESIGN_SYSTEM_REPO,
-      version: 'v1.0.0',
+      version: PINNED_VERSION,
       files: {
         'nonexistent-file.css': 'src/styles/missing.css',
       },
@@ -156,7 +158,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
   it('syncs Figma variables JSON', async () => {
     const config = {
       repo: MOCK_DESIGN_SYSTEM_REPO,
-      version: 'v1.0.0',
+      version: PINNED_VERSION,
       files: {
         'figma.variables.json': 'figma-variables.json',
       },
@@ -189,7 +191,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
   it('syncs custom SCSS from custom generator', async () => {
     const config = {
       repo: MOCK_DESIGN_SYSTEM_REPO,
-      version: 'v1.0.0',
+      version: PINNED_VERSION,
       files: {
         'brand-scss.custom._brand.scss': 'src/styles/_brand.scss',
       },
@@ -218,7 +220,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
   it('cache prevents re-download when version unchanged', async () => {
     const config = {
       repo: MOCK_DESIGN_SYSTEM_REPO,
-      version: 'v1.0.0',
+      version: PINNED_VERSION,
       files: {
         'tailwind.base.css': 'src/styles/base.css',
       },

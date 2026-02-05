@@ -16,6 +16,10 @@ import {
   showIntro,
   showOutro,
 } from "../cli/wizard";
+import {
+  getConsumerGitignore,
+  getProducerGitignore,
+} from "../templates/gitignore";
 import { getAllStarterTokens } from "../templates/tokens";
 import { getWorkflowPath, getWorkflowTemplate } from "../templates/workflow";
 import { fileExists } from "../utils/config";
@@ -316,6 +320,15 @@ async function createProducerConfig(
     }
   }
 
+  // Add .gitignore for producer repos
+  if (force || !(await fileExists(".gitignore"))) {
+    filesToCreate.push({
+      path: ".gitignore",
+      content: getProducerGitignore(),
+      description: "Ignore build artifacts and release-assets",
+    });
+  }
+
   if (dryRun) {
     showDryRunOutput(filesToCreate);
   } else {
@@ -352,6 +365,27 @@ async function createConsumerConfig(
       description: `repo: "${answers.repo}"`,
     },
   ];
+
+  // Add .gitignore entry for consumer repos (append if exists)
+  const gitignorePath = ".gitignore";
+  const consumerIgnore = getConsumerGitignore();
+  if (await fileExists(gitignorePath)) {
+    // Check if cache is already ignored
+    const existingContent = await fs.readFile(gitignorePath, "utf-8");
+    if (!existingContent.includes(".clafoutis/cache")) {
+      filesToCreate.push({
+        path: gitignorePath,
+        content: existingContent.trimEnd() + "\n\n" + consumerIgnore,
+        description: "Append .clafoutis/cache to existing .gitignore",
+      });
+    }
+  } else {
+    filesToCreate.push({
+      path: gitignorePath,
+      content: consumerIgnore,
+      description: "Ignore .clafoutis/cache",
+    });
+  }
 
   if (dryRun) {
     showDryRunOutput(filesToCreate);
@@ -401,6 +435,5 @@ function showNextSteps(
     log.message("  3. Push to GitHub - releases will be created automatically");
   } else {
     log.message("  1. Run: npx clafoutis sync");
-    log.message("  2. Add .clafoutis/cache to .gitignore");
   }
 }
