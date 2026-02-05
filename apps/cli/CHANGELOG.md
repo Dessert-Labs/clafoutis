@@ -1,5 +1,13 @@
 # @clafoutis/cli
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [a5b006a]
+  - @clafoutis/shared@1.0.0
+  - @clafoutis/generators@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
