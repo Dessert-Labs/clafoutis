@@ -1,5 +1,28 @@
 # @clafoutis/cli
 
+## 1.1.0
+
+### Minor Changes
+
+- d8c075c: Restructure starter token templates with proper primitive/semantic separation
+
+  **Primitives** (raw color values):
+  - `colors/primitives.json`: gray, blue, green, red, amber scales (50-900)
+
+  **Semantics** (named colors with meaning that reference primitives):
+  - `colors/semantic.json`: primary→blue, neutral→gray, success→green, warning→amber, error→red, plus background/foreground/border tokens for light mode
+  - `colors/semantic.dark.json`: dark mode overrides for background/foreground/border
+
+  This follows the proper design token architecture where primitives are raw values and semantics provide meaning by referencing primitives.
+
+### Patch Changes
+
+- d8c075c: Add .gitignore templates to init command
+  - Producer repos: ignore `node_modules/`, `build/`, and `release-assets/`
+  - Consumer repos: ignore `.clafoutis/cache`
+
+  This prevents accidentally committing generated files that cause CI workflow failures.
+
 ## 1.0.2
 
 ### Patch Changes
