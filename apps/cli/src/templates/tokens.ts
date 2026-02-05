@@ -5,7 +5,6 @@
  */
 export const colorPrimitives = {
   color: {
-    // Grayscale
     gray: {
       50: { $value: "#fafafa" },
       100: { $value: "#f5f5f5" },
@@ -18,7 +17,6 @@ export const colorPrimitives = {
       800: { $value: "#262626" },
       900: { $value: "#171717" },
     },
-    // Blue
     blue: {
       50: { $value: "#eff6ff" },
       100: { $value: "#dbeafe" },
@@ -31,7 +29,6 @@ export const colorPrimitives = {
       800: { $value: "#1e40af" },
       900: { $value: "#1e3a8a" },
     },
-    // Green
     green: {
       50: { $value: "#f0fdf4" },
       100: { $value: "#dcfce7" },
@@ -44,7 +41,6 @@ export const colorPrimitives = {
       800: { $value: "#166534" },
       900: { $value: "#14532d" },
     },
-    // Red
     red: {
       50: { $value: "#fef2f2" },
       100: { $value: "#fee2e2" },
@@ -57,7 +53,6 @@ export const colorPrimitives = {
       800: { $value: "#991b1b" },
       900: { $value: "#7f1d1d" },
     },
-    // Amber (for warnings)
     amber: {
       50: { $value: "#fffbeb" },
       100: { $value: "#fef3c7" },
@@ -79,7 +74,6 @@ export const colorPrimitives = {
  */
 export const colorSemantics = {
   color: {
-    // Brand colors - reference blue primitives
     primary: {
       50: { $value: "{color.blue.50}" },
       100: { $value: "{color.blue.100}" },
@@ -92,7 +86,6 @@ export const colorSemantics = {
       800: { $value: "{color.blue.800}" },
       900: { $value: "{color.blue.900}" },
     },
-    // Neutral colors - reference gray primitives
     neutral: {
       50: { $value: "{color.gray.50}" },
       100: { $value: "{color.gray.100}" },
@@ -105,7 +98,6 @@ export const colorSemantics = {
       800: { $value: "{color.gray.800}" },
       900: { $value: "{color.gray.900}" },
     },
-    // Success colors - reference green primitives
     success: {
       50: { $value: "{color.green.50}" },
       100: { $value: "{color.green.100}" },
@@ -118,7 +110,6 @@ export const colorSemantics = {
       800: { $value: "{color.green.800}" },
       900: { $value: "{color.green.900}" },
     },
-    // Warning colors - reference amber primitives
     warning: {
       50: { $value: "{color.amber.50}" },
       100: { $value: "{color.amber.100}" },
@@ -131,7 +122,6 @@ export const colorSemantics = {
       800: { $value: "{color.amber.800}" },
       900: { $value: "{color.amber.900}" },
     },
-    // Error colors - reference red primitives
     error: {
       50: { $value: "{color.red.50}" },
       100: { $value: "{color.red.100}" },
@@ -144,19 +134,16 @@ export const colorSemantics = {
       800: { $value: "{color.red.800}" },
       900: { $value: "{color.red.900}" },
     },
-    // Surface colors for light mode
     background: {
       default: { $value: "{color.gray.50}" },
       subtle: { $value: "{color.gray.100}" },
       muted: { $value: "{color.gray.200}" },
     },
-    // Text colors for light mode
     foreground: {
       default: { $value: "{color.gray.900}" },
       muted: { $value: "{color.gray.600}" },
       subtle: { $value: "{color.gray.500}" },
     },
-    // Border colors for light mode
     border: {
       default: { $value: "{color.gray.200}" },
       muted: { $value: "{color.gray.100}" },
@@ -171,19 +158,16 @@ export const colorSemantics = {
  */
 export const colorSemanticsDark = {
   color: {
-    // Surface colors - inverted for dark mode
     background: {
       default: { $value: "{color.gray.900}" },
       subtle: { $value: "{color.gray.800}" },
       muted: { $value: "{color.gray.700}" },
     },
-    // Text colors - inverted for dark mode
     foreground: {
       default: { $value: "{color.gray.50}" },
       muted: { $value: "{color.gray.400}" },
       subtle: { $value: "{color.gray.500}" },
     },
-    // Border colors - inverted for dark mode
     border: {
       default: { $value: "{color.gray.700}" },
       muted: { $value: "{color.gray.800}" },
