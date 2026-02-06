@@ -24,7 +24,8 @@
     },
     "test": {
       "dependsOn": ["build"],
-      "outputs": ["coverage/**"]
+      "outputs": ["coverage/**"],
+      "env": ["CLAFOUTIS_REPO_TOKEN"]
     },
     "dev": {
       "cache": false,

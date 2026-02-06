@@ -1,6 +1,9 @@
+import { generate as figmaGenerate } from "@clafoutis/generators/figma";
+import { generate as tailwindGenerate } from "@clafoutis/generators/tailwind";
 import { logger } from "@clafoutis/shared";
 import path from "path";
 import StyleDictionary from "style-dictionary";
+import { register as registerTsx } from "tsx/esm/api";
 import { pathToFileURL } from "url";
 
 import { offerWizard } from "../cli/wizard";
@@ -37,10 +40,10 @@ async function loadPlugin(pluginPath: string): Promise<GeneratorModule> {
   const absolutePath = path.resolve(process.cwd(), pluginPath);
 
   if (pluginPath.endsWith(".ts")) {
-    const { register } = await import("tsx/esm/api");
-    register();
+    registerTsx();
   }
 
+  // Dynamic import required here: loads user-provided plugin files by path at runtime
   return import(pathToFileURL(absolutePath).href);
 }
 
@@ -148,24 +151,16 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
         }
       } else {
         // Built-in generators from @clafoutis/generators package
-        const builtInGenerators: Record<
-          string,
-          () => Promise<GeneratorModule>
-        > = {
-          tailwind: async () => import("@clafoutis/generators/tailwind"),
-          figma: async () => import("@clafoutis/generators/figma"),
+        const builtInGenerators: Record<string, GeneratorModule> = {
+          tailwind: { generate: () => tailwindGenerate() },
+          figma: { generate: () => figmaGenerate() },
         };
 
         if (!builtInGenerators[name]) {
           throw generatorNotFoundError(name);
         }
 
-        try {
-          generatorModule = await builtInGenerators[name]();
-        } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : String(err);
-          throw pluginLoadError(`@clafoutis/generators/${name}`, errorMessage);
-        }
+        generatorModule = builtInGenerators[name];
       }
 
       const context: GeneratorContext = {

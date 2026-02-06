@@ -13,8 +13,8 @@ import tinycolor from "tinycolor2";
 
 // 0) CLEAN OUTPUT DIRECTORY
 // ----------------------------------------------------------------------------
-function cleanDist(): void {
-  const distDir = path.resolve("build/tailwind");
+function cleanDist(cwd: string): void {
+  const distDir = path.resolve(cwd, "build/tailwind");
   try {
     fs.rmSync(distDir, { recursive: true, force: true });
     logger.info(`Removed ${distDir}`);
@@ -31,13 +31,17 @@ function cleanDist(): void {
 /**
  * Transforms color values to space-separated RGB values
  * e.g. "#FF0000" -> "255 0 0"
+ * Preserves alpha channel using modern CSS syntax: "0 0 0 / 0.5"
  */
 StyleDictionary.registerTransform({
   name: "color/spaceRGB",
   type: "value",
   filter: (token: DesignToken) => token.$type === "color",
   transform: (token: DesignToken) => {
-    const { r, g, b } = tinycolor(token.$value).toRgb();
+    const { r, g, b, a } = tinycolor(token.$value).toRgb();
+    if (a < 1) {
+      return `${r} ${g} ${b} / ${a}`;
+    }
     return `${r} ${g} ${b}`;
   },
 });
@@ -170,7 +174,7 @@ function isValidJSKey(key: string): boolean {
  * @param {number} indent - The current indentation level
  * @returns {string} JavaScript literal representation
  */
-function toJSLiteral(value: any, indent = 2): string {
+function toJSLiteral(value: unknown, indent = 2): string {
   if (typeof value === "string") {
     return JSON.stringify(value);
   }
@@ -228,7 +232,7 @@ function setNestedProperty(
  */
 StyleDictionary.registerFormat({
   name: "css/index-file",
-  format: async function ({ file, options, dictionary }) {
+  format: async function ({ file, options }) {
     const header = await fileHeader({ file, options });
 
     const content = `
@@ -298,7 +302,7 @@ export default ${partialStr};`
  */
 StyleDictionary.registerFormat({
   name: "tailwind/config",
-  format: async function ({ file, options, dictionary }) {
+  format: async function ({ file, options }) {
     const header = await fileHeader({ file, options });
 
     return (
@@ -332,15 +336,18 @@ export default {
 
 // 5) BUILD SCRIPTS
 // ----------------------------------------------------------------------------
-async function main(): Promise<void> {
-  cleanDist();
+async function main(cwd: string = process.cwd()): Promise<void> {
+  const resolvedCwd = path.resolve(cwd);
+  const buildPath = path.join(resolvedCwd, "build", "tailwind") + "/";
+
+  cleanDist(resolvedCwd);
 
   // Base styles
   {
     console.log("Building base theme...");
     const SD = new StyleDictionary({
       source: [
-        "tokens/**/!(*.dark).json", // all .json files that do NOT end with .dark.json
+        path.join(resolvedCwd, "tokens/**/!(*.dark).json"), // all .json files that do NOT end with .dark.json
       ],
       log: {
         warnings: logWarningLevels.warn, // 'warn' | 'error' | 'disabled'
@@ -353,7 +360,7 @@ async function main(): Promise<void> {
         // 1) CSS output
         base: {
           transformGroup: "custom/css",
-          buildPath: "build/tailwind/",
+          buildPath,
           files: [
             {
               destination: "base.css",
@@ -376,7 +383,7 @@ async function main(): Promise<void> {
         tailwind: {
           transformGroup: "js",
           transforms: tailwindTransforms,
-          buildPath: "build/tailwind/",
+          buildPath,
           files: [
             {
               destination: "tailwind.base.js",
@@ -407,8 +414,8 @@ async function main(): Promise<void> {
       source: [
         // Order matters! Load base tokens first for reference resolution,
         // then dark tokens to override with dark-specific values
-        "tokens/**/!(*.dark).json",
-        "tokens/**/*.dark.json",
+        path.join(resolvedCwd, "tokens/**/!(*.dark).json"),
+        path.join(resolvedCwd, "tokens/**/*.dark.json"),
       ],
       log: {
         verbosity: logVerbosityLevels.default,
@@ -418,7 +425,7 @@ async function main(): Promise<void> {
         base: {
           transformGroup: "css",
           transforms: defaultTransforms,
-          buildPath: "build/tailwind/",
+          buildPath,
           files: [
             {
               destination: "dark.css",

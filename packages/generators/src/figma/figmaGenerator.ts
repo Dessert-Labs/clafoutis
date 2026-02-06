@@ -35,7 +35,7 @@ function cleanDist(): void {
   try {
     fs.rmSync(distDir, { recursive: true, force: true });
     logger.info(`Removed ${distDir}`);
-  } catch (err) {
+  } catch {
     // ignore
   }
   fs.mkdirSync(distDir, { recursive: true });
@@ -252,9 +252,8 @@ async function main(): Promise<void> {
     },
   } as ValueTransform);
 
-  // Add the reference transform to the platform
   if (SD.platforms.figma?.transforms) {
-    SD.platforms.figma.transforms.push("figma/reference" as any);
+    (SD.platforms.figma.transforms as string[]).push("figma/reference");
   }
 
   await SD.buildAllPlatforms();

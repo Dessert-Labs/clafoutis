@@ -1,50 +1,146 @@
 SHELL := /bin/bash
 # Load .env if present, then NVM and Node from .nvmrc (install if missing)
-ENV_LOADER := set -a && ([ -f .env ] && . ./.env || true) && set +a && export NVM_DIR="$${NVM_DIR:-$$HOME/.nvm}" && [ -s "$$NVM_DIR/nvm.sh" ] && . "$$NVM_DIR/nvm.sh" && nvm install && nvm use
+ENV_LOADER := set -a && [ -f .env ] && . ./.env && set +a && export NVM_DIR="$${NVM_DIR:-$$HOME/.nvm}" && [ -s "$$NVM_DIR/nvm.sh" ] && . "$$NVM_DIR/nvm.sh" && nvm install && nvm use
 
-# Inline args for targets that take them (e.g. make install axios lodash)
-ARGS := $(filter-out install,$(MAKECMDGOALS))
+# --- Package alias resolver ---
+# Maps short names to pnpm workspace filter names.
+# Usage: make build studio  |  make test studio-core  |  make start studio
+resolve_pkg = $(if $(filter studio,$(1)),@clafoutis/studio,\
+              $(if $(filter studio-core,$(1)),@clafoutis/studio-core,\
+              $(if $(filter studio-mcp,$(1)),@clafoutis/studio-mcp,\
+              $(if $(filter cli,$(1)),@clafoutis/cli,\
+              $(if $(filter generators,$(1)),@clafoutis/generators,\
+              $(if $(filter shared,$(1)),@clafoutis/shared,\
+              $(if $(filter eslint-config,$(1)),@clafoutis/eslint-config,\
+              $(if $(filter prettier-config,$(1)),@clafoutis/prettier-config,\
+              $(if $(filter tsup-config,$(1)),@clafoutis/tsup-config,\
+              $(if $(filter typescript-config,$(1)),@clafoutis/typescript-config,\
+              $(if $(filter vitest-config,$(1)),@clafoutis/vitest-config,\
+              @clafoutis/$(1))))))))))))
 
-.PHONY: help init install build-all lint-check lint-fix format-check format-fix check-all fix-all type-check test-all clean turbo-clean pre-commit
+# Grab everything after the first word so "make dev studio" gives PKG=studio
+SUBCMD := $(word 2,$(MAKECMDGOALS))
+
+.PHONY: help init install build-all lint-check lint-fix format-check format-fix check-all fix-all type-check test-all clean turbo-clean pre-commit dev build test start lint type storybook test-storybook
 
 help:
-	@echo "Usage: make [target] [ARGS...]"
+	@echo "Usage: make [target] [package]"
 	@echo ""
 	@echo "Setup:"
-	@echo "  make             - show this help"
-	@echo "  make init        - install pre-commit hooks and dependencies"
+	@echo "  make              - show this help"
+	@echo "  make init         - install pre-commit hooks and dependencies"
 	@echo "  make install [pkg ...] - pnpm install, or add pkgs if given"
 	@echo ""
-	@echo "Build:"
-	@echo "  make build-all   - build all packages"
+	@echo "Per-package (pass a short name as second arg):"
+	@echo "  make start <pkg>  - run dev server/watch for a package"
+	@echo "  make dev <pkg>    - alias for start"
+	@echo "  make build <pkg>  - build a single package"
+	@echo "  make test <pkg>   - run tests for a single package"
+	@echo "  make lint <pkg>   - lint a single package"
+	@echo "  make type <pkg>   - type-check a single package"
+	@echo "  make storybook <pkg> - run Storybook dev server"
+	@echo "  make test-storybook <pkg> - run Storybook Playwright tests"
+	@echo ""
+	@echo "  Packages: studio | studio-core | studio-mcp | cli | generators | shared"
+	@echo ""
+	@echo "  Examples:"
+	@echo "    make start studio      - start the Studio dev server"
+	@echo "    make build studio-core - build studio-core"
+	@echo "    make test studio-core  - run studio-core tests"
+	@echo ""
+	@echo "All-packages:"
+	@echo "  make build-all    - build all packages"
+	@echo "  make check-all    - lint + format + type-check all"
+	@echo "  make fix-all      - lint fix + format fix all"
+	@echo "  make test-all     - run all tests"
 	@echo ""
 	@echo "Code Quality:"
-	@echo "  make lint-check  - run ESLint (check only)"
-	@echo "  make lint-fix    - run ESLint with --fix"
-	@echo "  make format-check - run Prettier (check only)"
-	@echo "  make format-fix  - run Prettier (write)"
-	@echo "  make type-check  - run TypeScript type checking"
-	@echo "  make check-all   - run all checks (lint + format + type-check)"
-	@echo "  make fix-all     - fix all issues (lint + format)"
-	@echo ""
-	@echo "Testing:"
-	@echo "  make test-all    - run all tests"
+	@echo "  make lint-check   - ESLint check only (all)"
+	@echo "  make lint-fix     - ESLint fix (all)"
+	@echo "  make format-check - Prettier check only (all)"
+	@echo "  make format-fix   - Prettier fix (all)"
+	@echo "  make type-check   - TypeScript type-check (all)"
 	@echo ""
 	@echo "Cleanup:"
-	@echo "  make clean       - remove node_modules, dist, .turbo"
-	@echo "  make turbo-clean - clear Turbo cache only"
+	@echo "  make clean        - remove node_modules, dist, .turbo"
+	@echo "  make turbo-clean  - clear Turbo cache only"
 	@echo ""
 	@echo "Git Hooks:"
-	@echo "  make pre-commit  - run pre-commit checks (called by husky)"
+	@echo "  make pre-commit   - run pre-commit checks (called by husky)"
+
+# --- Setup targets ---
 
 init:
 	$(ENV_LOADER) && npx husky install && pnpm install
 .PHONY: init
 
-# Install all dependencies, or add packages inline: make install axios lodash
 install:
-	$(ENV_LOADER) && ARGS='$(ARGS)' && if [ -z "$$ARGS" ]; then pnpm install; else set -- $$ARGS && pnpm add "$$@"; fi
+	@$(eval INSTALL_ARGS := $(filter-out install,$(MAKECMDGOALS)))
+	$(ENV_LOADER) && ARGS='$(INSTALL_ARGS)' && if [ -z "$$ARGS" ]; then pnpm install; else set -- $$ARGS && pnpm add "$$@"; fi
 .PHONY: install
+
+# --- Per-package targets ---
+
+start:
+ifndef SUBCMD
+	@echo "Usage: make start <package>"; exit 1
+else
+	$(ENV_LOADER) && pnpm --filter $(call resolve_pkg,$(SUBCMD)) dev
+endif
+.PHONY: start
+
+dev: start
+.PHONY: dev
+
+build:
+ifndef SUBCMD
+	@echo "Usage: make build <package>"; exit 1
+else
+	$(ENV_LOADER) && pnpm --filter $(call resolve_pkg,$(SUBCMD)) build
+endif
+.PHONY: build
+
+test:
+ifndef SUBCMD
+	@echo "Usage: make test <package>"; exit 1
+else
+	$(ENV_LOADER) && pnpm --filter $(call resolve_pkg,$(SUBCMD)) test
+endif
+.PHONY: test
+
+lint:
+ifndef SUBCMD
+	@echo "Usage: make lint <package>"; exit 1
+else
+	$(ENV_LOADER) && pnpm --filter $(call resolve_pkg,$(SUBCMD)) lint:check
+endif
+.PHONY: lint
+
+type:
+ifndef SUBCMD
+	@echo "Usage: make type <package>"; exit 1
+else
+	$(ENV_LOADER) && pnpm --filter $(call resolve_pkg,$(SUBCMD)) type-check
+endif
+.PHONY: type
+
+storybook:
+ifndef SUBCMD
+	@echo "Usage: make storybook <package>"; exit 1
+else
+	$(ENV_LOADER) && pnpm --filter $(call resolve_pkg,$(SUBCMD)) storybook
+endif
+.PHONY: storybook
+
+test-storybook:
+ifndef SUBCMD
+	@echo "Usage: make test-storybook <package>"; exit 1
+else
+	$(ENV_LOADER) && pnpm --filter $(call resolve_pkg,$(SUBCMD)) test:storybook
+endif
+.PHONY: test-storybook
+
+# --- All-packages targets ---
 
 build-all:
 	$(ENV_LOADER) && pnpm turbo build
@@ -80,6 +176,8 @@ test-all:
 	$(ENV_LOADER) && pnpm turbo test
 .PHONY: test-all
 
+# --- Cleanup ---
+
 clean:
 	@echo "Cleaning everything..."
 	@find . -name "node_modules" -type d -prune -exec rm -rf '{}' + 2>/dev/null || true
@@ -95,6 +193,8 @@ turbo-clean:
 	@echo "Turbo cache cleared!"
 .PHONY: turbo-clean
 
+# --- Git Hooks ---
+
 pre-commit:
 	@echo "Running pre-commit checks..."
 	@echo "→ Checking linting..."
@@ -106,6 +206,6 @@ pre-commit:
 	@echo "✓ All pre-commit checks passed!"
 .PHONY: pre-commit
 
-# Dummy target so "make install pkg1 pkg2" does not try to build pkg1/pkg2
+# Catch-all: swallow extra args so "make dev studio" doesn't try to build "studio" as a target
 %:
 	@:

@@ -1,0 +1,46 @@
+{
+  "name": "@clafoutis/studio-mcp",
+  "private": true,
+  "version": "1.0.0",
+  "description": "MCP server for AI agent token management in Clafoutis Studio",
+  "author": "Dessert Labs",
+  "license": "BUSL-1.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "studio-mcp": "dist/server.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint:check": "eslint src",
+    "lint:write": "eslint src --fix",
+    "format:check": "prettier --check src",
+    "format:write": "prettier --write src",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@clafoutis/studio-core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@clafoutis/eslint-config": "workspace:*",
+    "@clafoutis/tsup-config": "workspace:*",
+    "@clafoutis/typescript-config": "workspace:*",
+    "@clafoutis/vitest-config": "workspace:*",
+    "@types/node": "^22.15.27"
+  }
+}

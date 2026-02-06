@@ -53,6 +53,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
       cwd: tempDir,
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
+      env: process.env,
     });
 
     // Verify files were downloaded
@@ -65,7 +66,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
       'utf-8'
     );
 
-    expect(baseCss).toContain('--color-primary-500');
+    expect(baseCss).toContain('--colors-button-primary-bg');
     expect(tailwindTokens).toContain('darkMode');
     expect(tailwindTokens).toContain('colors');
   });
@@ -88,6 +89,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
     execSync(`node ${cliBin} sync`, {
       cwd: tempDir,
       encoding: 'utf-8',
+      env: process.env,
     });
 
     const baseCss = await fs.readFile(
@@ -119,6 +121,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
     execSync(`node ${cliBin} sync`, {
       cwd: tempDir,
       encoding: 'utf-8',
+      env: process.env,
     });
 
     const hookOutput = await fs.readFile(hookOutputFile, 'utf-8');
@@ -146,6 +149,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
         cwd: tempDir,
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe'],
+        env: process.env,
       });
     } catch (e: any) {
       errorOutput = e.stderr || e.stdout || e.message;
@@ -173,6 +177,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
     execSync(`node ${cliBin} sync`, {
       cwd: tempDir,
       encoding: 'utf-8',
+      env: process.env,
     });
 
     const figmaJson = await fs.readFile(
@@ -206,6 +211,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
     execSync(`node ${cliBin} sync`, {
       cwd: tempDir,
       encoding: 'utf-8',
+      env: process.env,
     });
 
     const scssContent = await fs.readFile(
@@ -236,12 +242,14 @@ describe('E2E: mock-design-system → mock-frontend', () => {
     execSync(`node ${cliBin} sync`, {
       cwd: tempDir,
       encoding: 'utf-8',
+      env: process.env,
     });
 
     // Second sync should skip
     const output = execSync(`node ${cliBin} sync`, {
       cwd: tempDir,
       encoding: 'utf-8',
+      env: process.env,
     });
 
     expect(output).toContain('no sync needed');

@@ -33,7 +33,8 @@
     "format:check": "prettier --check src",
     "format:write": "prettier --write src",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run"
   },
   "dependencies": {
     "@clafoutis/shared": "workspace:*",

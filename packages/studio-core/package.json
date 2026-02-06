@@ -1,0 +1,42 @@
+{
+  "name": "@clafoutis/studio-core",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Shared design system editor engine for Clafoutis Studio",
+  "author": "Dessert Labs",
+  "license": "BUSL-1.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint:check": "eslint src",
+    "lint:write": "eslint src --fix",
+    "format:check": "prettier --check src",
+    "format:write": "prettier --write src",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "nanoid": "^5.1.5",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@clafoutis/eslint-config": "workspace:*",
+    "@clafoutis/tsup-config": "workspace:*",
+    "@clafoutis/typescript-config": "workspace:*",
+    "@clafoutis/vitest-config": "workspace:*",
+    "@types/node": "^22.15.27"
+  }
+}

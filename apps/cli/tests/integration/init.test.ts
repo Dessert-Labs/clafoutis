@@ -34,7 +34,7 @@ describe('initCommand', () => {
     it('creates starter token files', async () => {
       await initCommand({ producer: true, nonInteractive: true });
 
-      // Check primitives (raw color values)
+      // Check color primitives (Radix-style scales)
       const colorPrimitivesPath = path.join(
         tempDir,
         'tokens/colors/primitives.json'
@@ -42,28 +42,42 @@ describe('initCommand', () => {
       const colorPrimitives = JSON.parse(
         await fs.readFile(colorPrimitivesPath, 'utf-8')
       );
-      expect(colorPrimitives.color.gray).toBeDefined();
-      expect(colorPrimitives.color.blue).toBeDefined();
+      expect(colorPrimitives.colors.slate).toBeDefined();
+      expect(colorPrimitives.colors.blue).toBeDefined();
+      expect(colorPrimitives.colors.slate['100'].$type).toBe('color');
 
       // Check semantics (named colors with meaning)
       const colorSemanticsPath = path.join(
         tempDir,
-        'tokens/colors/semantic.json'
+        'tokens/colors/semantics.json'
       );
       const colorSemantics = JSON.parse(
         await fs.readFile(colorSemanticsPath, 'utf-8')
       );
-      expect(colorSemantics.color.primary).toBeDefined();
-      expect(colorSemantics.color.neutral).toBeDefined();
+      expect(colorSemantics.colors.background).toBeDefined();
+      expect(colorSemantics.colors.text).toBeDefined();
 
-      const spacingTokensPath = path.join(
+      // Check dimensions (spacing, borderRadius)
+      const dimensionsPath = path.join(
         tempDir,
-        'tokens/spacing/primitives.json'
+        'tokens/dimensions/base.json'
       );
-      const spacingTokens = JSON.parse(
-        await fs.readFile(spacingTokensPath, 'utf-8')
+      const dimensions = JSON.parse(
+        await fs.readFile(dimensionsPath, 'utf-8')
       );
-      expect(spacingTokens.spacing).toBeDefined();
+      expect(dimensions.spacing).toBeDefined();
+      expect(dimensions.borderRadius).toBeDefined();
+
+      // Check typography
+      const typographyPath = path.join(
+        tempDir,
+        'tokens/typography/base.json'
+      );
+      const typography = JSON.parse(
+        await fs.readFile(typographyPath, 'utf-8')
+      );
+      expect(typography.fontFamily).toBeDefined();
+      expect(typography.fontSize).toBeDefined();
     });
 
     it('creates GitHub workflow by default', async () => {

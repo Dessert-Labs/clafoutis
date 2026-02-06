@@ -142,3 +142,9 @@ dist
 
 # AI agent instructions
 AGENTS.md
+
+# TanStack Query cache
+apps/studio/.tanstack/
+
+# Generated files
+apps/studio/src/generated/
