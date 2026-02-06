@@ -632,19 +632,20 @@ export const createEditorStore = (initialState?: Partial<EditorState>) => {
     undo: () => {
       const { history, historyIndex } = get();
       if (historyIndex < 0) return;
-      const entry = history[historyIndex];
+      const targetIndex = historyIndex > 0 ? historyIndex - 1 : historyIndex;
+      const entry = history[targetIndex];
       if (!entry) return;
       set({
         nodes: cloneNodesMap(entry.nodes),
         pages: JSON.parse(JSON.stringify(entry.pages)),
         currentPageId: entry.currentPageId,
-        historyIndex: historyIndex - 1,
+        historyIndex: targetIndex,
       });
     },
 
     redo: () => {
       const { history, historyIndex } = get();
-      if (historyIndex >= history.length - 1) return;
+      if (historyIndex + 1 >= history.length) return;
       const entry = history[historyIndex + 1];
       if (!entry) return;
       set({

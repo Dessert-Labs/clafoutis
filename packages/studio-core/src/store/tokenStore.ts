@@ -363,6 +363,10 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
           continue;
         }
 
+        if (isThemeFile(filePath)) {
+          continue;
+        }
+
         const cloned = deepCloneFile(file);
         const token = getNestedValue(cloned, path);
         if (token) {

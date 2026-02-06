@@ -8,19 +8,30 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import CanvasEditorView from "@/components/views/CanvasEditorView";
-import { getEditorStore } from "@/lib/studio-api";
+import { getEditorStore, getTokenStore } from "@/lib/studio-api";
 
 export function CanvasEditor() {
   const store = getEditorStore();
+  const tokenStore = getTokenStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const initialState = store.getState();
   const [activeTool, setActiveTool] = useState<ToolType>(
-    store.getState().activeTool,
+    initialState.activeTool,
   );
-  const [pageNodes, setPageNodes] = useState<DesignNode[]>([]);
-  const [allNodes, setAllNodes] = useState<Map<string, DesignNode>>(new Map());
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [selectedNode, setSelectedNode] = useState<DesignNode | null>(null);
+  const [pageNodes, setPageNodes] = useState<DesignNode[]>(
+    initialState.getCurrentPageNodes(),
+  );
+  const [allNodes, setAllNodes] = useState<Map<string, DesignNode>>(
+    initialState.nodes,
+  );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    new Set(initialState.selectedIds),
+  );
+  const [selectedNode, setSelectedNode] = useState<DesignNode | null>(() => {
+    const nodes = initialState.getSelectedNodes();
+    return nodes.length === 1 ? nodes[0] : null;
+  });
 
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -46,8 +57,12 @@ export function CanvasEditor() {
 
     renderDotGrid(ctx, camera, canvas.offsetWidth, canvas.offsetHeight);
 
+    const resolveToken = (path: string) => {
+      return tokenStore.getState().resolvedTokens.find((t) => t.path === path);
+    };
+
     for (const node of currentPageNodes) {
-      renderNode(ctx, node, nodes);
+      renderNode(ctx, node, nodes, resolveToken);
     }
 
     for (const sel of state.getSelectedNodes()) {
@@ -56,7 +71,7 @@ export function CanvasEditor() {
 
     renderSmartGuides(ctx, smartGuides);
     ctx.restore();
-  }, [store]);
+  }, [store, tokenStore]);
 
   useEffect(() => {
     const unsub = store.subscribe((state) => {
@@ -186,8 +201,27 @@ export function CanvasEditor() {
 
     const handleMouseUp = () => {
       const state = store.getState();
+      const wasDrawing = state.isDrawing;
+      const wasCreatingShape = [
+        "RECTANGLE",
+        "ELLIPSE",
+        "FRAME",
+        "LINE",
+      ].includes(state.activeTool);
+
       state.setIsDrawing(false);
       state.setDrawStart(null);
+
+      if (wasDrawing && wasCreatingShape && state.selectedIds.size === 1) {
+        const selectedId = Array.from(state.selectedIds)[0];
+        const node = state.nodes.get(selectedId);
+        if (node) {
+          const scene = node as { width: number; height: number };
+          if (scene.width > 0 && scene.height > 0) {
+            state.pushHistory();
+          }
+        }
+      }
     };
 
     const handleWheel = (e: WheelEvent) => {

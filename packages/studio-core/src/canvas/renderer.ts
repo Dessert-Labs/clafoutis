@@ -1,3 +1,4 @@
+import { bridgeColorToPaint } from "../tokens/bridge";
 import type {
   Camera,
   DesignNode,
@@ -6,8 +7,10 @@ import type {
   RGBA,
   SceneNode,
   SmartGuide,
+  SolidPaint,
   TextNode,
 } from "../types/nodes";
+import type { ResolvedToken } from "../types/tokens";
 
 export function rgbaToCSS(color: RGBA): string {
   return `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${color.a})`;
@@ -39,11 +42,23 @@ export function applyFill(
   ctx: CanvasRenderingContext2D,
   paint: Paint,
   node: SceneNode,
+  resolveToken?: (path: string) => ResolvedToken | undefined,
 ): void {
   if (paint.visible === false) return;
 
   if (paint.type === "SOLID") {
-    ctx.fillStyle = rgbaToCSS(paint.color);
+    const solidPaint = paint as SolidPaint;
+    if (solidPaint.tokenPath && resolveToken) {
+      const token = resolveToken(solidPaint.tokenPath);
+      if (token) {
+        const tokenPaint = bridgeColorToPaint(token);
+        if (tokenPaint) {
+          ctx.fillStyle = rgbaToCSS(tokenPaint.color);
+          return;
+        }
+      }
+    }
+    ctx.fillStyle = rgbaToCSS(solidPaint.color);
   } else if (paint.type === "LINEAR" || paint.type === "RADIAL") {
     const gp = paint as GradientPaint;
     let gradient: CanvasGradient;
@@ -125,6 +140,7 @@ export function renderNode(
   ctx: CanvasRenderingContext2D,
   node: DesignNode,
   allNodes: Map<string, DesignNode>,
+  resolveToken?: (path: string) => ResolvedToken | undefined,
 ): void {
   const scene = node as SceneNode;
   if (!scene.visible) return;
@@ -155,7 +171,7 @@ export function renderNode(
     case "INSTANCE":
     case "IMAGE": {
       for (const fill of scene.fills) {
-        applyFill(ctx, fill, scene);
+        applyFill(ctx, fill, scene, resolveToken);
         drawRoundedRect(
           ctx,
           0,
@@ -183,7 +199,7 @@ export function renderNode(
 
     case "ELLIPSE": {
       for (const fill of scene.fills) {
-        applyFill(ctx, fill, scene);
+        applyFill(ctx, fill, scene, resolveToken);
         ctx.beginPath();
         ctx.ellipse(
           scene.width / 2,
@@ -228,7 +244,7 @@ export function renderNode(
       const pointCount =
         (node as unknown as { pointCount: number }).pointCount || 3;
       for (const fill of scene.fills) {
-        applyFill(ctx, fill, scene);
+        applyFill(ctx, fill, scene, resolveToken);
         renderPolygon(ctx, scene.width, scene.height, pointCount);
         ctx.fill();
       }
@@ -248,7 +264,7 @@ export function renderNode(
       const pc = starNode.pointCount || 5;
       const ir = starNode.innerRadius || 0.5;
       for (const fill of scene.fills) {
-        applyFill(ctx, fill, scene);
+        applyFill(ctx, fill, scene, resolveToken);
         renderStar(ctx, scene.width, scene.height, pc, ir);
         ctx.fill();
       }
@@ -264,7 +280,22 @@ export function renderNode(
       const textNode = node as TextNode;
       const fill = scene.fills[0];
       if (fill && fill.type === "SOLID") {
-        ctx.fillStyle = rgbaToCSS(fill.color);
+        const solidFill = fill as SolidPaint;
+        if (solidFill.tokenPath && resolveToken) {
+          const token = resolveToken(solidFill.tokenPath);
+          if (token) {
+            const tokenPaint = bridgeColorToPaint(token);
+            if (tokenPaint) {
+              ctx.fillStyle = rgbaToCSS(tokenPaint.color);
+            } else {
+              ctx.fillStyle = rgbaToCSS(solidFill.color);
+            }
+          } else {
+            ctx.fillStyle = rgbaToCSS(solidFill.color);
+          }
+        } else {
+          ctx.fillStyle = rgbaToCSS(solidFill.color);
+        }
       }
       const fontSize = textNode.fontSize || 16;
       const fontWeight = textNode.fontWeight || 400;
@@ -292,7 +323,7 @@ export function renderNode(
       if (vectorNode.pathData) {
         const path2d = new Path2D(vectorNode.pathData);
         for (const fill of scene.fills) {
-          applyFill(ctx, fill, scene);
+          applyFill(ctx, fill, scene, resolveToken);
           ctx.fill(
             path2d,
             vectorNode.windingRule === "EVENODD" ? "evenodd" : "nonzero",
@@ -309,7 +340,7 @@ export function renderNode(
 
   for (const childId of scene.children) {
     const child = allNodes.get(childId);
-    if (child) renderNode(ctx, child, allNodes);
+    if (child) renderNode(ctx, child, allNodes, resolveToken);
   }
 
   ctx.restore();

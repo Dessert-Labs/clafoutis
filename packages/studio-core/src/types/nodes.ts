@@ -48,6 +48,7 @@ export interface SolidPaint {
   color: RGBA;
   blendMode?: BlendMode;
   visible?: boolean;
+  tokenPath?: string;
 }
 
 export interface GradientPaint {

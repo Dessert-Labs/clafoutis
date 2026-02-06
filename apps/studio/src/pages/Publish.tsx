@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import PublishView from "@/components/views/PublishView";
 import { useAuth } from "@/contexts/AuthProvider";
 import { pushTokenChanges } from "@/lib/github-commit";
+import { clearDraft } from "@/lib/persistence";
 import { getTokenStore } from "@/lib/studio-api";
 
 export function Publish() {
@@ -55,6 +56,7 @@ export function Publish() {
         { createPr: true, branchName },
       );
       setResult({ sha: pushResult.commitSha, prUrl: pushResult.prUrl });
+      clearDraft(projectId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Push failed");
     } finally {

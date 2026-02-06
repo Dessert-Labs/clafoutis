@@ -41,6 +41,7 @@ const mockTokens: ResolvedToken[] = [
     type: "color",
     value: "#6366f1",
     resolvedValue: "#6366f1",
+    filePath: "colors/primitives.json",
     description: "Primary brand color",
   },
   {
@@ -48,6 +49,7 @@ const mockTokens: ResolvedToken[] = [
     type: "color",
     value: "#4f46e5",
     resolvedValue: "#4f46e5",
+    filePath: "colors/primitives.json",
     description: "Primary hover",
   },
   {
@@ -55,6 +57,7 @@ const mockTokens: ResolvedToken[] = [
     type: "color",
     value: "#f5f5f5",
     resolvedValue: "#f5f5f5",
+    filePath: "colors/primitives.json",
     description: "Light gray",
   },
   {
@@ -62,6 +65,7 @@ const mockTokens: ResolvedToken[] = [
     type: "color",
     value: "#171717",
     resolvedValue: "#171717",
+    filePath: "colors/primitives.json",
     description: "Near black",
   },
   {
@@ -69,6 +73,7 @@ const mockTokens: ResolvedToken[] = [
     type: "color",
     value: "#22c55e",
     resolvedValue: "#22c55e",
+    filePath: "colors/primitives.json",
     description: "Success green",
   },
   {
@@ -76,7 +81,34 @@ const mockTokens: ResolvedToken[] = [
     type: "color",
     value: "#ef4444",
     resolvedValue: "#ef4444",
+    filePath: "colors/primitives.json",
     description: "Error red",
+  },
+] as ResolvedToken[];
+
+const mockTokensWithReferences: ResolvedToken[] = [
+  {
+    path: "colors.surface.elevated",
+    type: "color",
+    value: "{colors.slate.100}",
+    resolvedValue: "#fcfcfd",
+    filePath: "colors/semantics.json",
+    reference: "colors.slate.100",
+  },
+  {
+    path: "colors.background.overlay",
+    type: "color",
+    value: "{colors.blackAlpha.700}",
+    resolvedValue: "rgba(0, 0, 0, 0.5)",
+    filePath: "colors/semantics.json",
+    reference: "colors.blackAlpha.700",
+  },
+  {
+    path: "colors.blackAlpha.700",
+    type: "color",
+    value: "rgba(0, 0, 0, 0.5)",
+    resolvedValue: "rgba(0, 0, 0, 0.5)",
+    filePath: "colors/primitives.json",
   },
 ] as ResolvedToken[];
 
@@ -88,10 +120,15 @@ export const Default: Story = {
     tokens: mockTokens,
     canUndo: false,
     canRedo: false,
+    dirtyCount: 0,
+    tokenFiles: ["colors/primitives.json", "colors/semantics.json"],
     onSearchChange: noop,
     onUpdateToken: noop,
+    onInputDirty: noop,
+    onSaveAll: noop,
     onUndo: noop,
     onRedo: noop,
+    onAddToken: noop,
   },
 };
 
@@ -108,6 +145,20 @@ export const WithUndoRedo: Story = {
     ...Default.args,
     canUndo: true,
     canRedo: true,
+  },
+};
+
+export const WithDirtyEdits: Story = {
+  args: {
+    ...Default.args,
+    dirtyCount: 3,
+  },
+};
+
+export const WithColorTokens: Story = {
+  args: {
+    ...Default.args,
+    tokens: mockTokensWithReferences,
   },
 };
 

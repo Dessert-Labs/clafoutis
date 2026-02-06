@@ -1,3 +1,4 @@
+import type { DTCGTokenFile } from "@clafoutis/studio-core";
 import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -9,10 +10,14 @@ import {
 } from "@/components/layout/ProjectGate";
 import { ProjectSidebar } from "@/components/layout/ProjectSidebar";
 import { StatusBar } from "@/components/layout/StatusBar";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthProvider";
+import { clearDraft, loadDraft } from "@/lib/persistence";
 import {
   getGenerationStatus,
   onGenerationStatusChange,
+  regeneratePreview,
 } from "@/lib/preview-css";
 import { getEditorStore, getTokenStore } from "@/lib/studio-api";
 import { loadTokensFromGitHub } from "@/lib/token-loader";
@@ -32,6 +37,10 @@ function ProjectLayoutRoute() {
 
   const [genStatus, setGenStatus] = useState(getGenerationStatus());
   const [zoom, setZoom] = useState(100);
+  const [draftConflict, setDraftConflict] = useState<{
+    savedAt: number;
+    tokenFiles: Record<string, DTCGTokenFile>;
+  } | null>(null);
 
   useEffect(() => {
     const unsubscribe = onGenerationStatusChange(setGenStatus);
@@ -72,13 +81,25 @@ function ProjectLayoutRoute() {
       "tokens",
       accessTokenRef.current,
     )
-      .then((result) => {
+      .then(async (result) => {
         if (cancelled) return;
         const count = getTokenStore().getState().resolvedTokens.length;
         setTokenCount(count);
         setFileCount(result.fileCount);
         setLoadState("loaded");
         loadedProjectRef.current = projectId;
+
+        try {
+          const draft = await loadDraft(projectId);
+          if (draft && !cancelled) {
+            setDraftConflict({
+              savedAt: draft.savedAt,
+              tokenFiles: draft.tokenFiles,
+            });
+          }
+        } catch {
+          // Draft check is best-effort; ignore failures
+        }
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -104,6 +125,22 @@ function ProjectLayoutRoute() {
     document.dispatchEvent(new CustomEvent("studio:open-help"));
   }, []);
 
+  const handleRestoreDraft = useCallback(async () => {
+    if (!draftConflict) return;
+    const store = getTokenStore();
+    store.getState().loadTokens(draftConflict.tokenFiles);
+    const files = store.getState().exportAsJSON();
+    await regeneratePreview(files);
+    const count = store.getState().resolvedTokens.length;
+    setTokenCount(count);
+    setDraftConflict(null);
+  }, [draftConflict]);
+
+  const handleDiscardDraft = useCallback(() => {
+    clearDraft(projectId);
+    setDraftConflict(null);
+  }, [projectId]);
+
   return (
     <AppLayout
       user={user}
@@ -126,6 +163,35 @@ function ProjectLayoutRoute() {
         </ProjectGate>
       </div>
       <StatusBar genStatus={genStatus} zoom={zoom} />
+
+      <Dialog
+        open={draftConflict !== null}
+        onOpenChange={(open) => {
+          if (!open) handleDiscardDraft();
+        }}
+      >
+        <DialogContent>
+          <DialogTitle>Unsaved Draft Found</DialogTitle>
+          <p className="mt-2 text-sm text-studio-text-secondary">
+            You have unsaved edits from{" "}
+            <strong>
+              {draftConflict
+                ? new Date(draftConflict.savedAt).toLocaleString()
+                : ""}
+            </strong>
+            . Would you like to restore your draft or discard it and keep the
+            latest data from GitHub?
+          </p>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={handleDiscardDraft}>
+              Discard
+            </Button>
+            <Button size="sm" onClick={handleRestoreDraft}>
+              Restore Draft
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

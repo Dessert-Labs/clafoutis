@@ -57,6 +57,60 @@ describe('editorStore', () => {
     expect(store.getState().nodes.size).toBe(0);
   });
 
+  it('redo restores state after undo', () => {
+    const store = createEditorStore();
+    expect(store.getState().nodes.size).toBe(0);
+    
+    store.getState().pushHistory();
+    const id1 = store.getState().createShape('RECTANGLE', 0, 0);
+    expect(store.getState().nodes.size).toBe(1);
+    
+    store.getState().pushHistory();
+    const id2 = store.getState().createShape('ELLIPSE', 10, 10);
+    expect(store.getState().nodes.size).toBe(2);
+    
+    store.getState().pushHistory();
+    
+    store.getState().undo();
+    expect(store.getState().nodes.size).toBe(1);
+    expect(store.getState().nodes.has(id1)).toBe(true);
+    expect(store.getState().nodes.has(id2)).toBe(false);
+    
+    store.getState().redo();
+    expect(store.getState().nodes.size).toBe(2);
+    expect(store.getState().nodes.has(id1)).toBe(true);
+    expect(store.getState().nodes.has(id2)).toBe(true);
+  });
+
+  it('redo restores nodes with correct dimensions', () => {
+    const store = createEditorStore();
+    store.getState().pushHistory();
+    
+    const id = store.getState().createShape('RECTANGLE', 10, 20, { width: 100, height: 50 });
+    const node1 = store.getState().nodes.get(id)!;
+    expect((node1 as { width: number; height: number }).width).toBe(100);
+    expect((node1 as { width: number; height: number }).height).toBe(50);
+    
+    store.getState().pushHistory();
+    
+    store.getState().updateNode(id, { width: 200, height: 100 } as Record<string, unknown>);
+    const node2 = store.getState().nodes.get(id)!;
+    expect((node2 as { width: number; height: number }).width).toBe(200);
+    expect((node2 as { width: number; height: number }).height).toBe(100);
+    
+    store.getState().pushHistory();
+    
+    store.getState().undo();
+    const node3 = store.getState().nodes.get(id)!;
+    expect((node3 as { width: number; height: number }).width).toBe(100);
+    expect((node3 as { width: number; height: number }).height).toBe(50);
+    
+    store.getState().redo();
+    const node4 = store.getState().nodes.get(id)!;
+    expect((node4 as { width: number; height: number }).width).toBe(200);
+    expect((node4 as { width: number; height: number }).height).toBe(100);
+  });
+
   it('copyNodes/pasteNodes deep clones with new IDs', () => {
     const store = createEditorStore();
     const id = store.getState().createShape('RECTANGLE', 0, 0);

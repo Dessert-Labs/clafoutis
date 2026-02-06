@@ -1,8 +1,9 @@
-import type { DesignNode, SceneNode } from "@clafoutis/studio-core";
+import type { DesignNode, Paint, SceneNode } from "@clafoutis/studio-core";
 
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
+import { FillEditor } from "./FillEditor";
 
 interface PropertiesPanelProps {
   selectedNode: DesignNode | null;
@@ -130,6 +131,15 @@ export function PropertiesPanel({
           className="mt-1 h-8 text-xs"
         />
       </div>
+
+      <Separator />
+
+      <FillEditor
+        fills={scene.fills || []}
+        onUpdateFills={(fills: Paint[]) =>
+          onUpdateProp(selectedNode.id, "fills", fills)
+        }
+      />
     </div>
   );
 }

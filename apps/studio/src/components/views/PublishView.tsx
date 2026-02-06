@@ -35,7 +35,7 @@ const PublishView = ({
   onPush,
   onLogin,
 }: PublishViewProps) => (
-  <div className="space-y-6 overflow-y-auto p-6">
+  <div className="flex-1 min-w-0 space-y-6 overflow-y-auto p-6">
     <h1 className="text-2xl font-bold text-studio-text">Publish Changes</h1>
 
     {isLocal && (

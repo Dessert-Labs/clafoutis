@@ -42,7 +42,7 @@ const TokenCatalogView = ({
   tokens,
   categoryCounts,
 }: TokenCatalogViewProps) => (
-  <div className="space-y-6 overflow-y-auto p-6">
+  <div className="flex-1 min-w-0 space-y-6 overflow-y-auto p-6">
     <h1 className="text-2xl font-bold text-studio-text">Design Tokens</h1>
 
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
