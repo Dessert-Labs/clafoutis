@@ -218,18 +218,54 @@ export interface TokenState {
   canRedo: () => boolean;
 }
 
-function resolveAll(tokenFiles: Map<string, DTCGTokenFile>): ResolvedToken[] {
-  const allFlat: { path: string; token: DTCGToken; filePath: string }[] = [];
+function getFileTheme(filePath: string): string | null {
+  // Extract filename: "colors/primitives.dark.json" -> "primitives.dark.json"
+  const fileName = filePath.split("/").pop() ?? filePath;
+  const segments = fileName.split(".");
+  // Base files: ["primitives", "json"] (2 segments)
+  // Theme files: ["primitives", "dark", "json"] (3+ segments)
+  if (segments.length >= 3 && segments[segments.length - 1] === "json") {
+    return segments[segments.length - 2]; // "dark"
+  }
+  return null;
+}
+
+function isThemeFile(filePath: string): boolean {
+  return getFileTheme(filePath) !== null;
+}
+
+function resolveAll(
+  tokenFiles: Map<string, DTCGTokenFile>,
+  activeTheme = "light",
+): ResolvedToken[] {
+  const merged = new Map<string, { token: DTCGToken; filePath: string }>();
+
+  // First pass: load base (non-theme) tokens
   for (const [filePath, file] of tokenFiles) {
-    allFlat.push(...flattenTokens(file, filePath));
+    if (isThemeFile(filePath)) continue;
+    for (const { path, token } of flattenTokens(file, filePath)) {
+      merged.set(path, { token, filePath });
+    }
   }
 
+  // Second pass: overlay active theme overrides
+  if (activeTheme !== "light") {
+    for (const [filePath, file] of tokenFiles) {
+      const theme = getFileTheme(filePath);
+      if (theme !== activeTheme) continue;
+      for (const { path, token } of flattenTokens(file, filePath)) {
+        merged.set(path, { token, filePath });
+      }
+    }
+  }
+
+  // Build a lookup map for reference resolution (includes all themes for resolving)
   const tokenMap = new Map<string, DTCGToken>();
-  for (const { path, token } of allFlat) {
+  for (const [path, { token }] of merged) {
     tokenMap.set(path, token);
   }
 
-  return allFlat.map(({ path, token, filePath }) => {
+  return Array.from(merged.entries()).map(([path, { token, filePath }]) => {
     const ref = getReference(token.$value);
     const resolvedValue = resolveValue(token.$value, tokenMap, new Set(), path);
     return {
@@ -273,7 +309,7 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
         baseline.set(k, deepCloneFile(v));
       }
       const themes = detectThemes(Array.from(tokenFiles.keys()));
-      const resolvedTokens = resolveAll(tokenFiles);
+      const resolvedTokens = resolveAll(tokenFiles, "light");
       set({
         tokenFiles,
         baseline,
@@ -327,7 +363,7 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
           dirtyFiles.add(filePath);
           set({
             tokenFiles,
-            resolvedTokens: resolveAll(tokenFiles),
+            resolvedTokens: resolveAll(tokenFiles, get().activeTheme),
             dirtyFiles,
             undoStack: [...state.undoStack, snapshot],
             redoStack: [],
@@ -344,7 +380,7 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
         }
         set({
           tokenFiles,
-          resolvedTokens: resolveAll(tokenFiles),
+          resolvedTokens: resolveAll(tokenFiles, get().activeTheme),
           dirtyFiles,
           undoStack: [...state.undoStack, snapshot],
           redoStack: [],
@@ -366,7 +402,7 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
       dirtyFiles.add(filePath);
       set({
         tokenFiles,
-        resolvedTokens: resolveAll(tokenFiles),
+        resolvedTokens: resolveAll(tokenFiles, get().activeTheme),
         dirtyFiles,
         undoStack: [...state.undoStack, snapshot],
         redoStack: [],
@@ -389,7 +425,7 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
 
       set({
         tokenFiles,
-        resolvedTokens: resolveAll(tokenFiles),
+        resolvedTokens: resolveAll(tokenFiles, get().activeTheme),
         dirtyFiles,
         undoStack: [...state.undoStack, snapshot],
         redoStack: [],
@@ -500,7 +536,13 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
       return overrides;
     },
 
-    setActiveTheme: (theme) => set({ activeTheme: theme }),
+    setActiveTheme: (theme) => {
+      const { tokenFiles } = get();
+      set({
+        activeTheme: theme,
+        resolvedTokens: resolveAll(tokenFiles, theme),
+      });
+    },
 
     createTokenFile: (filePath) => {
       const state = get();
@@ -520,7 +562,7 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
       dirtyFiles.add(filePath);
       set({
         tokenFiles,
-        resolvedTokens: resolveAll(tokenFiles),
+        resolvedTokens: resolveAll(tokenFiles, get().activeTheme),
         dirtyFiles,
         undoStack: [...state.undoStack, snapshot],
         redoStack: [],
@@ -568,7 +610,7 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
 
       set({
         tokenFiles,
-        resolvedTokens: resolveAll(tokenFiles),
+        resolvedTokens: resolveAll(tokenFiles, get().activeTheme),
         dirtyFiles,
         undoStack: [...state.undoStack, snapshot],
         redoStack: [],
@@ -605,7 +647,7 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
 
       set({
         tokenFiles,
-        resolvedTokens: resolveAll(tokenFiles),
+        resolvedTokens: resolveAll(tokenFiles, get().activeTheme),
         dirtyFiles,
         undoStack: [...state.undoStack, snapshot],
         redoStack: [],
@@ -624,7 +666,7 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
       const prev = state.undoStack[state.undoStack.length - 1];
       set({
         tokenFiles: prev.files,
-        resolvedTokens: resolveAll(prev.files),
+        resolvedTokens: resolveAll(prev.files, get().activeTheme),
         undoStack: state.undoStack.slice(0, -1),
         redoStack: [...state.redoStack, currentSnapshot],
       });
@@ -637,7 +679,7 @@ export const createTokenStore = (initialState?: Partial<TokenState>) => {
       const next = state.redoStack[state.redoStack.length - 1];
       set({
         tokenFiles: next.files,
-        resolvedTokens: resolveAll(next.files),
+        resolvedTokens: resolveAll(next.files, get().activeTheme),
         undoStack: [...state.undoStack, currentSnapshot],
         redoStack: state.redoStack.slice(0, -1),
       });

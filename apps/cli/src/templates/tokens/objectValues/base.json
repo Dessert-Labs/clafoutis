@@ -7,7 +7,7 @@
         "y": 2,
         "blur": 4,
         "spread": 0,
-        "color": "{colors.black.100}"
+        "color": "{colors.slate.1200}"
       }
     },
     "modal": {
@@ -17,7 +17,7 @@
         "y": 4,
         "blur": 12,
         "spread": 0,
-        "color": "{colors.black.100}"
+        "color": "{colors.slate.1200}"
       }
     }
   }

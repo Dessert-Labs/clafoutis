@@ -11,7 +11,6 @@ interface TokenGroup {
   tokens: ResolvedToken[];
 }
 
-/** Groups flat token list into nested groups by path segments. */
 function groupTokens(tokens: ResolvedToken[]): {
   semantic: TokenGroup[];
   component: TokenGroup[];
@@ -21,7 +20,6 @@ function groupTokens(tokens: ResolvedToken[]): {
 
   for (const token of tokens) {
     const parts = token.path.split(".");
-    // Group by first two segments (e.g., "colors.background", "colors.blue")
     const groupKey = parts.length >= 2 ? `${parts[0]}.${parts[1]}` : parts[0];
     if (!groups.has(groupKey)) groups.set(groupKey, []);
     groups.get(groupKey)!.push(token);
@@ -59,7 +57,12 @@ function groupTokens(tokens: ResolvedToken[]): {
   return { semantic, component, primitive };
 }
 
-function Swatch({ token }: { token: ResolvedToken }) {
+const textColor = "rgb(var(--colors-text-primary))";
+const mutedColor = "rgb(var(--colors-text-secondary))";
+const borderColor = "rgb(var(--colors-border-primary))";
+const surfaceColor = "rgb(var(--colors-surface-primary))";
+
+function Swatch({ token }: Readonly<{ token: ResolvedToken }>) {
   const [hovered, setHovered] = useState(false);
   const value =
     typeof token.resolvedValue === "string" ? token.resolvedValue : undefined;
@@ -69,20 +72,32 @@ function Swatch({ token }: { token: ResolvedToken }) {
   return (
     <div
       className="group relative text-center"
+      role="img"
+      aria-label={`Color swatch: ${token.path}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <div
-        className="mx-auto h-10 w-10 rounded-lg border border-studio-border shadow-sm transition-transform group-hover:scale-110"
-        style={{ backgroundColor: value }}
+        className="mx-auto h-10 w-10 rounded-lg shadow-sm transition-transform group-hover:scale-110"
+        style={{ backgroundColor: value, border: `1px solid ${borderColor}` }}
       />
-      <p className="mt-1 text-[10px] text-studio-text-muted">{shade}</p>
+      <p className="mt-1 text-[10px]" style={{ color: mutedColor }}>
+        {shade}
+      </p>
 
       {hovered && (
-        <div className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded bg-studio-bg-secondary px-2 py-1 text-xs shadow-lg border border-studio-border">
-          <p className="font-mono font-medium text-studio-text">{token.path}</p>
+        <div
+          className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded px-2 py-1 text-xs shadow-lg"
+          style={{
+            backgroundColor: surfaceColor,
+            border: `1px solid ${borderColor}`,
+          }}
+        >
+          <p className="font-mono font-medium" style={{ color: textColor }}>
+            {token.path}
+          </p>
           {value && (
-            <p className="text-studio-text-muted">
+            <p style={{ color: mutedColor }}>
               {value}
               {refInfo}
             </p>
@@ -93,14 +108,17 @@ function Swatch({ token }: { token: ResolvedToken }) {
   );
 }
 
-function TokenGroupRow({ group }: { group: TokenGroup }) {
+function TokenGroupRow({ group }: Readonly<{ group: TokenGroup }>) {
   return (
     <div>
-      <h4 className="mb-1 text-sm font-medium capitalize text-studio-text">
+      <h4
+        className="mb-1 text-sm font-medium capitalize"
+        style={{ color: textColor }}
+      >
         {group.name}
       </h4>
       {group.description && (
-        <p className="mb-2 text-xs text-studio-text-muted">
+        <p className="mb-2 text-xs" style={{ color: mutedColor }}>
           {group.description}
         </p>
       )}
@@ -122,10 +140,13 @@ export function ColorPalettePreview({
     <div className="space-y-8">
       {semantic.length > 0 && (
         <div>
-          <h3 className="mb-1 text-base font-semibold text-studio-text">
+          <h3
+            className="mb-1 text-base font-semibold"
+            style={{ color: textColor }}
+          >
             Semantic Tokens
           </h3>
-          <p className="mb-4 text-xs text-studio-text-muted">
+          <p className="mb-4 text-xs" style={{ color: mutedColor }}>
             Named colors with meaning -- background, text, border, state
           </p>
           <div className="space-y-4">
@@ -138,12 +159,15 @@ export function ColorPalettePreview({
 
       {component.length > 0 && (
         <>
-          <hr className="border-studio-border" />
+          <hr style={{ borderColor }} />
           <div>
-            <h3 className="mb-1 text-base font-semibold text-studio-text">
+            <h3
+              className="mb-1 text-base font-semibold"
+              style={{ color: textColor }}
+            >
               Component Tokens
             </h3>
-            <p className="mb-4 text-xs text-studio-text-muted">
+            <p className="mb-4 text-xs" style={{ color: mutedColor }}>
               Token values bound to specific UI components
             </p>
             <div className="space-y-4">
@@ -157,12 +181,15 @@ export function ColorPalettePreview({
 
       {primitive.length > 0 && (
         <>
-          <hr className="border-studio-border" />
+          <hr style={{ borderColor }} />
           <div>
-            <h3 className="mb-1 text-base font-semibold text-studio-text">
+            <h3
+              className="mb-1 text-base font-semibold"
+              style={{ color: textColor }}
+            >
               Primitive Colors
             </h3>
-            <p className="mb-4 text-xs text-studio-text-muted">
+            <p className="mb-4 text-xs" style={{ color: mutedColor }}>
               Raw color values that semantic tokens reference
             </p>
             <div className="space-y-4">

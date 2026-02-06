@@ -1,15 +1,49 @@
-import { useCallback, useState } from "react";
+import type { ResolvedToken } from "@clafoutis/studio-core";
+import { useCallback, useRef, useSyncExternalStore } from "react";
 
 import ComponentsPreviewView from "@/components/views/ComponentsPreviewView";
 import { getTokenStore } from "@/lib/studio-api";
 
+function useStoreColorTokens() {
+  const store = getTokenStore();
+  const cachedRef = useRef<ResolvedToken[]>([]);
+  const prevLenRef = useRef(-1);
+  const prevThemeRef = useRef("");
+
+  return useSyncExternalStore(store.subscribe, () => {
+    const state = store.getState();
+    const theme = state.activeTheme;
+    const tokens = state.resolvedTokens;
+
+    // Only recompute if the resolved tokens array or theme changed
+    if (
+      tokens.length !== prevLenRef.current ||
+      theme !== prevThemeRef.current
+    ) {
+      prevLenRef.current = tokens.length;
+      prevThemeRef.current = theme;
+      cachedRef.current = state.getTokensByCategory("colors");
+    }
+
+    return cachedRef.current;
+  });
+}
+
 export function ComponentsPreview() {
-  const [darkMode, setDarkMode] = useState(false);
-  const colorTokens = getTokenStore().getState().getTokensByCategory("colors");
+  const store = getTokenStore();
+
+  const activeTheme = useSyncExternalStore(
+    store.subscribe,
+    () => store.getState().activeTheme,
+  );
+
+  const colorTokens = useStoreColorTokens();
+  const darkMode = activeTheme === "dark";
 
   const handleToggleDarkMode = useCallback(() => {
-    setDarkMode((prev) => !prev);
-  }, []);
+    const next = store.getState().activeTheme === "dark" ? "light" : "dark";
+    store.getState().setActiveTheme(next);
+  }, [store]);
 
   return (
     <ComponentsPreviewView

@@ -1,35 +1,45 @@
 const variantStyles: Record<string, React.CSSProperties> = {
   primary: {
-    backgroundColor: "rgb(var(--colors-button-primary-bg, 0 0 0))",
-    color: "rgb(var(--colors-button-primary-text, 255 255 255))",
+    backgroundColor: "rgb(var(--colors-button-primary-bg))",
+    color: "rgb(var(--colors-button-primary-text))",
   },
   secondary: {
-    backgroundColor: "rgb(var(--colors-button-secondary-bg, 229 229 229))",
-    color: "rgb(var(--colors-button-secondary-text, 17 17 17))",
+    backgroundColor: "rgb(var(--colors-button-secondary-bg))",
+    color: "rgb(var(--colors-button-secondary-text))",
+  },
+  outline: {
+    backgroundColor: "rgb(var(--colors-button-outline-bg))",
+    color: "rgb(var(--colors-button-outline-text))",
+    border: "1px solid",
+    borderColor: "rgb(var(--colors-button-outline-border))",
+  },
+  ghost: {
+    backgroundColor: "rgb(var(--colors-button-ghost-bg))",
+    color: "rgb(var(--colors-button-ghost-text))",
   },
   accent: {
-    backgroundColor: "rgb(var(--colors-button-accent-bg, 59 130 246))",
-    color: "rgb(var(--colors-button-accent-text, 255 255 255))",
+    backgroundColor: "rgb(var(--colors-button-accent-bg))",
+    color: "rgb(var(--colors-button-accent-text))",
   },
   success: {
-    backgroundColor: "rgb(var(--colors-button-success-bg, 34 197 94))",
-    color: "rgb(var(--colors-button-success-text, 255 255 255))",
+    backgroundColor: "rgb(var(--colors-button-success-bg))",
+    color: "rgb(var(--colors-button-success-text))",
   },
   error: {
-    backgroundColor: "rgb(var(--colors-button-error-bg, 239 68 68))",
-    color: "rgb(var(--colors-button-error-text, 255 255 255))",
+    backgroundColor: "rgb(var(--colors-button-error-bg))",
+    color: "rgb(var(--colors-button-error-text))",
   },
   warning: {
-    backgroundColor: "rgb(var(--colors-button-warning-bg, 245 158 11))",
-    color: "rgb(var(--colors-button-warning-text, 0 0 0))",
+    backgroundColor: "rgb(var(--colors-button-warning-bg))",
+    color: "rgb(var(--colors-button-warning-text))",
   },
   info: {
-    backgroundColor: "rgb(var(--colors-button-info-bg, 59 130 246))",
-    color: "rgb(var(--colors-button-info-text, 255 255 255))",
+    backgroundColor: "rgb(var(--colors-button-info-bg))",
+    color: "rgb(var(--colors-button-info-text))",
   },
   link: {
-    backgroundColor: "transparent",
-    color: "rgb(var(--colors-button-link-text, 37 99 235))",
+    backgroundColor: "rgb(var(--colors-button-link-bg))",
+    color: "rgb(var(--colors-button-link-text))",
     textDecoration: "underline",
   },
 };
@@ -44,7 +54,12 @@ export function ButtonPreview() {
   return (
     <div className="space-y-4">
       <div>
-        <h4 className="mb-2 text-sm font-medium text-studio-text">Sizes</h4>
+        <h4
+          className="mb-2 text-sm font-medium"
+          style={{ color: "rgb(var(--colors-text-primary))" }}
+        >
+          Sizes
+        </h4>
         <div className="flex flex-wrap items-center gap-2">
           {["sm", "md", "lg"].map((size) => (
             <button
@@ -59,7 +74,12 @@ export function ButtonPreview() {
       </div>
 
       <div>
-        <h4 className="mb-2 text-sm font-medium text-studio-text">Variants</h4>
+        <h4
+          className="mb-2 text-sm font-medium"
+          style={{ color: "rgb(var(--colors-text-primary))" }}
+        >
+          Variants
+        </h4>
         <div className="flex flex-wrap gap-2">
           {Object.entries(variantStyles).map(([name, style]) => (
             <button

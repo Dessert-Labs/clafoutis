@@ -42,9 +42,9 @@ describe('initCommand', () => {
       const colorPrimitives = JSON.parse(
         await fs.readFile(colorPrimitivesPath, 'utf-8')
       );
-      expect(colorPrimitives.colors.white).toBeDefined();
+      expect(colorPrimitives.colors.slate).toBeDefined();
       expect(colorPrimitives.colors.blue).toBeDefined();
-      expect(colorPrimitives.colors.white['100'].$type).toBe('color');
+      expect(colorPrimitives.colors.slate['100'].$type).toBe('color');
 
       // Check semantics (named colors with meaning)
       const colorSemanticsPath = path.join(

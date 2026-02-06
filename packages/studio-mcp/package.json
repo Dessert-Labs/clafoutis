@@ -1,5 +1,6 @@
 {
   "name": "@clafoutis/studio-mcp",
+  "private": true,
   "version": "1.0.0",
   "description": "MCP server for AI agent token management in Clafoutis Studio",
   "author": "Dessert Labs",

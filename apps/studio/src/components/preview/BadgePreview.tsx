@@ -1,52 +1,45 @@
-interface BadgeConfig {
-  label: string;
-  bgRgb: string;
-  textRgb: string;
+interface BadgeProps {
+  variant:
+    | "default"
+    | "secondary"
+    | "outline"
+    | "info"
+    | "success"
+    | "warning"
+    | "error";
+  children: React.ReactNode;
 }
 
-const badges: BadgeConfig[] = [
-  {
-    label: "Default",
-    bgRgb: "var(--colors-surface-primary, 243 244 246)",
-    textRgb: "var(--colors-text-primary, 17 17 17)",
-  },
-  {
-    label: "Info",
-    bgRgb: "var(--colors-state-info-primary, 59 130 246)",
-    textRgb: "255 255 255",
-  },
-  {
-    label: "Success",
-    bgRgb: "var(--colors-state-success-primary, 34 197 94)",
-    textRgb: "255 255 255",
-  },
-  {
-    label: "Warning",
-    bgRgb: "var(--colors-state-warning-primary, 245 158 11)",
-    textRgb: "0 0 0",
-  },
-  {
-    label: "Error",
-    bgRgb: "var(--colors-state-error-primary, 239 68 68)",
-    textRgb: "255 255 255",
-  },
-];
+function Badge({ variant, children }: Readonly<BadgeProps>) {
+  const isOutline = variant === "outline";
+
+  return (
+    <span
+      className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
+      style={{
+        backgroundColor: `rgb(var(--colors-badge-${variant}-bg))`,
+        color: `rgb(var(--colors-badge-${variant}-text))`,
+        ...(isOutline && {
+          border: "1px solid",
+          borderColor: `rgb(var(--colors-badge-outline-border))`,
+        }),
+      }}
+    >
+      {children}
+    </span>
+  );
+}
 
 export function BadgePreview() {
   return (
     <div className="flex flex-wrap gap-2">
-      {badges.map((badge) => (
-        <span
-          key={badge.label}
-          className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
-          style={{
-            backgroundColor: `rgb(${badge.bgRgb})`,
-            color: `rgb(${badge.textRgb})`,
-          }}
-        >
-          {badge.label}
-        </span>
-      ))}
+      <Badge variant="default">Default</Badge>
+      <Badge variant="secondary">Secondary</Badge>
+      <Badge variant="outline">Outline</Badge>
+      <Badge variant="info">Info</Badge>
+      <Badge variant="success">Success</Badge>
+      <Badge variant="warning">Warning</Badge>
+      <Badge variant="error">Error</Badge>
     </div>
   );
 }

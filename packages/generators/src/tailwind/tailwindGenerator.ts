@@ -31,13 +31,17 @@ function cleanDist(): void {
 /**
  * Transforms color values to space-separated RGB values
  * e.g. "#FF0000" -> "255 0 0"
+ * Preserves alpha channel using modern CSS syntax: "0 0 0 / 0.5"
  */
 StyleDictionary.registerTransform({
   name: "color/spaceRGB",
   type: "value",
   filter: (token: DesignToken) => token.$type === "color",
   transform: (token: DesignToken) => {
-    const { r, g, b } = tinycolor(token.$value).toRgb();
+    const { r, g, b, a } = tinycolor(token.$value).toRgb();
+    if (a < 1) {
+      return `${r} ${g} ${b} / ${a}`;
+    }
     return `${r} ${g} ${b}`;
   },
 });

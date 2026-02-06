@@ -15,18 +15,25 @@ export function SpacingPreview() {
     <div className="space-y-3">
       {spacings.map(({ name, value }) => (
         <div key={name} className="flex items-center gap-4">
-          <span className="w-8 text-right font-mono text-sm text-studio-text-muted">
+          <span
+            className="w-8 text-right font-mono text-sm"
+            style={{ color: "rgb(var(--colors-text-secondary))" }}
+          >
             {name}
           </span>
           <div
             className="h-4 rounded"
             style={{
               width: value,
-              backgroundColor:
-                "rgb(var(--colors-button-primary-bg, 59 130 246) / 0.5)",
+              backgroundColor: "rgb(var(--colors-button-primary-bg) / 0.5)",
             }}
           />
-          <span className="text-xs text-studio-text-muted">{value}</span>
+          <span
+            className="text-xs"
+            style={{ color: "rgb(var(--colors-text-secondary))" }}
+          >
+            {value}
+          </span>
         </div>
       ))}
     </div>

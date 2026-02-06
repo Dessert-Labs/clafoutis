@@ -1,74 +1,110 @@
-export function FormPreview() {
-  const inputStyle: React.CSSProperties = {
-    borderColor: "rgb(var(--colors-border-primary, 209 213 219))",
-    backgroundColor: "rgb(var(--colors-surface-secondary, 255 255 255))",
-    color: "rgb(var(--colors-text-primary, 17 17 17))",
-  };
+interface InputProps {
+  label: string;
+  id: string;
+  type?: string;
+  placeholder?: string;
+  disabled?: boolean;
+  error?: string;
+}
 
-  const labelStyle: React.CSSProperties = {
-    color: "rgb(var(--colors-text-secondary, 55 65 81))",
-  };
+function Input({
+  label,
+  id,
+  type = "text",
+  placeholder,
+  disabled = false,
+  error,
+}: Readonly<InputProps>) {
+  const baseStyle: React.CSSProperties = disabled
+    ? {
+        backgroundColor: "rgb(var(--colors-input-disabled-bg))",
+        borderColor: "rgb(var(--colors-input-disabled-border))",
+        color: "rgb(var(--colors-input-disabled-text))",
+        cursor: "not-allowed",
+      }
+    : {
+        backgroundColor: "rgb(var(--colors-input-bg))",
+        borderColor: error
+          ? "rgb(var(--colors-state-error-primary))"
+          : "rgb(var(--colors-input-border))",
+        color: "rgb(var(--colors-input-text))",
+      };
 
   return (
-    <div className="space-y-4">
-      {/* Text input */}
-      <div className="flex flex-col gap-1">
-        <label
-          htmlFor="preview-email"
-          className="text-sm font-medium"
-          style={labelStyle}
-        >
-          Email
-        </label>
-        <input
-          id="preview-email"
-          type="email"
-          placeholder="you@example.com"
-          className="rounded-md border px-3 py-2 text-sm placeholder:opacity-50 focus:outline-none focus:ring-2"
-          style={inputStyle}
-        />
-      </div>
-
-      {/* Input with error */}
-      <div className="flex flex-col gap-1">
-        <label
-          htmlFor="preview-password"
-          className="text-sm font-medium"
-          style={labelStyle}
-        >
-          Password
-        </label>
-        <input
-          id="preview-password"
-          type="password"
-          placeholder="Enter password"
-          className="rounded-md border px-3 py-2 text-sm placeholder:opacity-50 focus:outline-none focus:ring-2"
-          style={{
-            ...inputStyle,
-            borderColor: "rgb(var(--colors-state-error-primary, 239 68 68))",
-          }}
-        />
+    <div className="flex flex-col gap-1">
+      <label
+        htmlFor={id}
+        className="text-sm font-medium"
+        style={{ color: "rgb(var(--colors-text-secondary))" }}
+      >
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        placeholder={placeholder}
+        disabled={disabled}
+        className="rounded-md border px-3 py-2 text-sm placeholder:opacity-50 focus:outline-none focus:ring-2"
+        style={
+          {
+            ...baseStyle,
+            "--tw-ring-color": "rgb(var(--colors-input-focus))",
+          } as React.CSSProperties
+        }
+      />
+      {error && (
         <span
           className="text-sm"
-          style={{ color: "rgb(var(--colors-state-error-primary, 239 68 68))" }}
+          style={{ color: "rgb(var(--colors-state-error-primary))" }}
         >
-          Password is required
+          {error}
         </span>
-      </div>
+      )}
+    </div>
+  );
+}
 
-      {/* Select */}
+export function FormPreview() {
+  return (
+    <div className="space-y-4">
+      <Input
+        label="Email"
+        id="preview-email"
+        type="email"
+        placeholder="you@example.com"
+      />
+
+      <Input
+        label="Password"
+        id="preview-password"
+        type="password"
+        placeholder="Enter password"
+        error="Password is required"
+      />
+
+      <Input
+        label="Disabled"
+        id="preview-disabled"
+        placeholder="Cannot edit"
+        disabled
+      />
+
       <div className="flex flex-col gap-1">
         <label
           htmlFor="preview-role"
           className="text-sm font-medium"
-          style={labelStyle}
+          style={{ color: "rgb(var(--colors-text-secondary))" }}
         >
           Role
         </label>
         <select
           id="preview-role"
           className="rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
-          style={inputStyle}
+          style={{
+            borderColor: "rgb(var(--colors-input-border))",
+            backgroundColor: "rgb(var(--colors-input-bg))",
+            color: "rgb(var(--colors-input-text))",
+          }}
         >
           <option>Designer</option>
           <option>Developer</option>
@@ -76,7 +112,6 @@ export function FormPreview() {
         </select>
       </div>
 
-      {/* Checkbox */}
       <div className="flex items-center gap-2">
         <input
           id="preview-remember"
@@ -87,7 +122,7 @@ export function FormPreview() {
         <label
           htmlFor="preview-remember"
           className="text-sm"
-          style={{ color: "rgb(var(--colors-text-primary, 17 17 17))" }}
+          style={{ color: "rgb(var(--colors-text-primary))" }}
         >
           Remember me
         </label>

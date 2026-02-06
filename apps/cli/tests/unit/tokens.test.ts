@@ -98,14 +98,15 @@ describe('color primitives spot checks', () => {
     const content = getStarterTokenContent('colors/primitives.json');
     const parsed = JSON.parse(content);
 
-    expect(parsed.colors.white['100']).toEqual({
+    expect(parsed.colors.slate['100']).toEqual({
       $type: 'color',
-      $value: '#FFFFFF',
+      $value: '#fcfcfd',
     });
     expect(parsed.colors.blue['900']).toEqual({
       $type: 'color',
       $value: '#0090ff',
     });
+    expect(parsed.colors.slate).toBeDefined();
     expect(parsed.colors.gray).toBeDefined();
     expect(parsed.colors.green).toBeDefined();
     expect(parsed.colors.red).toBeDefined();
@@ -119,7 +120,7 @@ describe('semantics spot checks', () => {
 
     expect(parsed.colors.background.primary.$type).toBe('color');
     expect(parsed.colors.background.primary.$value).toBe(
-      '{colors.white.100}',
+      '{colors.slate.100}',
     );
     expect(parsed.colors.text.primary.$type).toBe('color');
   });
