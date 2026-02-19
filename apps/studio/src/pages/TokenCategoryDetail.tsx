@@ -132,6 +132,10 @@ export function TokenCategoryDetail() {
   );
 
   const tokenFiles = Array.from(store.getState().tokenFiles.keys());
+  const existingTokenPaths = useMemo(
+    () => resolvedTokens.map((t) => t.path),
+    [resolvedTokens],
+  );
 
   return (
     <TokenCategoryDetailView
@@ -139,6 +143,7 @@ export function TokenCategoryDetail() {
       category={category}
       search={search}
       tokens={tokens}
+      existingTokenPaths={existingTokenPaths}
       canUndo={store.getState().canUndo()}
       canRedo={store.getState().canRedo()}
       dirtyCount={dirtyInputs.size}

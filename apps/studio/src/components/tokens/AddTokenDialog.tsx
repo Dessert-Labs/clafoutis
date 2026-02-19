@@ -22,6 +22,7 @@ import {
 interface AddTokenDialogProps {
   category: string;
   tokenFiles: string[];
+  existingTokenPaths: string[];
   onAddToken: (
     path: string,
     type: string,
@@ -54,11 +55,59 @@ const CATEGORY_TYPE_MAP: Record<string, DTCGTokenType> = {
   shadows: "shadow",
 };
 
+/**
+ * Validates a token path against existing tokens.
+ * Returns an error message if invalid, or null if valid.
+ */
+function validateTokenPath(
+  path: string,
+  existingPaths: string[],
+): string | null {
+  if (!path.trim()) return null;
+
+  const trimmed = path.trim();
+  const segments = trimmed.split(".");
+
+  if (segments.length < 3) {
+    return "Path needs at least 3 segments (e.g., colors.red.500)";
+  }
+
+  if (segments.some((s) => !s)) {
+    return "Path contains empty segments";
+  }
+
+  // Check if this path already exists as a token
+  if (existingPaths.includes(trimmed)) {
+    return "A token already exists at this path";
+  }
+
+  // Check if this path would overwrite an existing group
+  // e.g., adding "colors.red" when "colors.red.100" exists
+  const wouldOverwriteGroup = existingPaths.some((existing) =>
+    existing.startsWith(trimmed + "."),
+  );
+  if (wouldOverwriteGroup) {
+    return `"${trimmed}" is a group containing other tokens — adding a token here would overwrite them`;
+  }
+
+  // Check if an ancestor is already a token
+  // e.g., adding "colors.red.foo.bar" when "colors.red.foo" is a token
+  for (let i = 1; i < segments.length; i++) {
+    const ancestor = segments.slice(0, i).join(".");
+    if (existingPaths.includes(ancestor)) {
+      return `"${ancestor}" is already a token — cannot nest under it`;
+    }
+  }
+
+  return null;
+}
+
 export default function AddTokenDialog({
   category,
   tokenFiles,
+  existingTokenPaths,
   onAddToken,
-}: AddTokenDialogProps) {
+}: Readonly<AddTokenDialogProps>) {
   const [open, setOpen] = useState(false);
   const [path, setPath] = useState(`${category}.`);
   const [type, setType] = useState<DTCGTokenType>(
@@ -72,9 +121,11 @@ export default function AddTokenDialog({
     return matchingFile || tokenFiles[0] || "";
   });
 
+  const pathError = validateTokenPath(path, existingTokenPaths);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!path.trim() || !value.trim() || !filePath) return;
+    if (!path.trim() || !value.trim() || !filePath || pathError) return;
 
     onAddToken(path.trim(), type, value.trim(), filePath);
     setOpen(false);
@@ -109,10 +160,15 @@ export default function AddTokenDialog({
               onChange={(e) => setPath(e.target.value)}
               placeholder={`${category}.newToken`}
               required
+              className={pathError ? "border-red-500" : ""}
             />
-            <p className="mt-1 text-xs text-studio-text-muted">
-              Token path (e.g., colors.primary.500)
-            </p>
+            {pathError ? (
+              <p className="mt-1 text-xs text-red-500">{pathError}</p>
+            ) : (
+              <p className="mt-1 text-xs text-studio-text-muted">
+                Token path (e.g., colors.primary.500)
+              </p>
+            )}
           </div>
 
           <div>
@@ -183,7 +239,9 @@ export default function AddTokenDialog({
             </Button>
             <Button
               type="submit"
-              disabled={!path.trim() || !value.trim() || !filePath}
+              disabled={
+                !path.trim() || !value.trim() || !filePath || !!pathError
+              }
             >
               Add Token
             </Button>

@@ -13,6 +13,7 @@ interface TokenCategoryDetailViewProps {
   category: string;
   search: string;
   tokens: ResolvedToken[];
+  existingTokenPaths: string[];
   canUndo: boolean;
   canRedo: boolean;
   dirtyCount: number;
@@ -36,6 +37,7 @@ const TokenCategoryDetailView = ({
   category,
   search,
   tokens,
+  existingTokenPaths,
   canUndo,
   canRedo,
   dirtyCount,
@@ -110,6 +112,7 @@ const TokenCategoryDetailView = ({
         <AddTokenDialog
           category={category}
           tokenFiles={tokenFiles}
+          existingTokenPaths={existingTokenPaths}
           onAddToken={onAddToken}
         />
       </div>

@@ -118,6 +118,7 @@ export const Default: Story = {
     category: "colors",
     search: "",
     tokens: mockTokens,
+    existingTokenPaths: mockTokens.map((t) => t.path),
     canUndo: false,
     canRedo: false,
     dirtyCount: 0,
