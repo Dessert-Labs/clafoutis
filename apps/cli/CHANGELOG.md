@@ -1,5 +1,11 @@
 # @clafoutis/cli
 
+## 1.2.0
+
+### Minor Changes
+
+- Add the `clafoutis format` command for consistent token JSON formatting and improve CLI command robustness for token formatting and generation workflows.
+
 ## 1.1.2
 
 ### Patch Changes
