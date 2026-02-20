@@ -47,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
   const [user, setUser] = useState<GitHubUser | null>(null);
   const [isLoading, setIsLoading] = useState(!!getInitialToken());
+  const redirectUri = `${window.location.origin}/callback`;
 
   useEffect(() => {
     if (accessToken) {
@@ -69,9 +70,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
       return;
     }
-    const redirectUri =
-      import.meta.env.VITE_GITHUB_REDIRECT_URI ||
-      `${window.location.origin}/callback`;
     const verifier = generateCodeVerifier();
     storeVerifier(verifier);
     const challenge = await generateCodeChallenge(verifier);
@@ -81,9 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleCallback = useCallback(async (code: string) => {
     const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
     if (!clientId) throw new Error("VITE_GITHUB_CLIENT_ID is not configured");
-    const redirectUri =
-      import.meta.env.VITE_GITHUB_REDIRECT_URI ||
-      `${window.location.origin}/callback`;
     const verifier = getStoredVerifier();
     if (!verifier) throw new Error("Missing code verifier");
     clearStoredVerifier();
