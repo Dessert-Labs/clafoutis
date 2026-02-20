@@ -3,7 +3,6 @@ import { envConfig } from "./env.js";
 export const getServerConfig = () => ({
   port: envConfig.PORT,
   nodeEnv: envConfig.NODE_ENV,
-  serveStatic: envConfig.SERVE_STATIC,
 });
 
 export const getGitHubConfig = () => ({

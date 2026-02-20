@@ -1,6 +1,3 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
 import type { Express, NextFunction, Request, Response } from "express";
 import express from "express";
 import morgan from "morgan";
@@ -9,8 +6,6 @@ import { getCorsConfig, getServerConfig } from "./config/index.js";
 import generateRouter from "./routes/generate.js";
 import healthRouter from "./routes/health.js";
 import oauthRouter from "./routes/oauth.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function corsMiddleware(req: Request, res: Response, next: NextFunction) {
   const corsConfig = getCorsConfig();
@@ -44,14 +39,6 @@ export function createApp(): Express {
 
   app.use("/__studio", oauthRouter);
   app.use("/__studio", generateRouter);
-
-  if (serverConfig.serveStatic) {
-    const distPath = path.resolve(__dirname, "../../studio/dist");
-    app.use(express.static(distPath));
-    app.get("/{*path}", (_req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
-  }
 
   return app;
 }
