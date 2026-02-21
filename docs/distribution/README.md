@@ -252,7 +252,7 @@ You can create custom generators for your specific platform needs:
 Custom generators receive the `StyleDictionary` instance:
 
 ```typescript
-import type { GeneratorPlugin } from 'clafoutis';
+import type { GeneratorPlugin } from '@clafoutis/cli';
 
 export const generate: GeneratorPlugin = async ({ tokensDir, outputDir, StyleDictionary }) => {
   // Register custom transforms

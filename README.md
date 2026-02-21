@@ -27,19 +27,19 @@ design and code stay in sync
 **Producers** (design system maintainers) define tokens in JSON and publish via GitHub Releases:
 
 ```bash
-npx clafoutis init --producer
+npx @clafoutis/cli init --producer
 # Edit tokens/colors/primitives.json
 git push  # GitHub Action runs generate and creates release automatically
 ```
 
 The default workflow generates `build/`, commits updated `build/**` back to the repository, and creates a GitHub Release.
-If you opted out of the GitHub workflow during init, run `npx clafoutis generate` locally before pushing.
+If you opted out of the GitHub workflow during init, run `npx @clafoutis/cli generate` locally before pushing.
 
 **Consumers** (application developers) pin to a version and sync:
 
 ```bash
-npx clafoutis init --consumer --repo Acme/design-system
-npx clafoutis sync
+npx @clafoutis/cli init --consumer --repo Acme/design-system
+npx @clafoutis/cli sync
 git commit -m "chore: sync design tokens v1.2.0"
 ```
 
@@ -67,10 +67,10 @@ npm install -D @clafoutis/cli
 
 ```bash
 # Initialize with interactive wizard
-npx clafoutis init --producer
+npx @clafoutis/cli init --producer
 
 # Or non-interactive for CI
-npx clafoutis init --producer --generators=tailwind,figma --non-interactive
+npx @clafoutis/cli init --producer --generators=tailwind,figma --non-interactive
 ```
 
 This creates:
@@ -84,10 +84,10 @@ Edit your tokens, push to main, and a GitHub Release is created automatically.
 
 ```bash
 # Initialize
-npx clafoutis init --consumer --repo Acme/design-system
+npx @clafoutis/cli init --consumer --repo Acme/design-system
 
 # Sync tokens from the latest release
-npx clafoutis sync
+npx @clafoutis/cli sync
 
 # Commit the synced files
 git add .clafoutis/ src/tokens/
@@ -102,7 +102,7 @@ gh release list -R Acme/design-system
 
 # Update .clafoutis/consumer.json to new version
 # Then sync
-npx clafoutis sync
+npx @clafoutis/cli sync
 ```
 
 ## Configuration
@@ -142,11 +142,11 @@ Use `"version": "latest"` during development to always get the newest release. P
 Initialize configuration with an interactive wizard, or use flags for CI:
 
 ```bash
-npx clafoutis init --producer              # Interactive producer setup
-npx clafoutis init --consumer --repo X/Y   # Interactive consumer setup
-npx clafoutis init --producer --cwd ./packages/design-system
-npx clafoutis init --non-interactive       # Skip prompts, use flags/defaults
-npx clafoutis init --dry-run               # Preview without writing files
+npx @clafoutis/cli init --producer              # Interactive producer setup
+npx @clafoutis/cli init --consumer --repo X/Y   # Interactive consumer setup
+npx @clafoutis/cli init --producer --cwd ./packages/design-system
+npx @clafoutis/cli init --non-interactive       # Skip prompts, use flags/defaults
+npx @clafoutis/cli init --dry-run               # Preview without writing files
 ```
 
 ### `clafoutis generate`
@@ -154,10 +154,10 @@ npx clafoutis init --dry-run               # Preview without writing files
 Transform tokens into platform-specific outputs:
 
 ```bash
-npx clafoutis generate                     # Use config file
-npx clafoutis generate --tailwind --figma  # Specify generators
-npx clafoutis generate --cwd ./packages/design-system
-npx clafoutis generate --dry-run           # Preview output
+npx @clafoutis/cli generate                     # Use config file
+npx @clafoutis/cli generate --tailwind --figma  # Specify generators
+npx @clafoutis/cli generate --cwd ./packages/design-system
+npx @clafoutis/cli generate --dry-run           # Preview output
 ```
 
 ### `clafoutis sync`
@@ -165,10 +165,10 @@ npx clafoutis generate --dry-run           # Preview output
 Download tokens from a GitHub Release:
 
 ```bash
-npx clafoutis sync                         # Sync if version changed
-npx clafoutis sync --force                 # Re-sync even if cached
-npx clafoutis sync --cwd ./apps/web
-npx clafoutis sync --dry-run               # Preview what would sync
+npx @clafoutis/cli sync                         # Sync if version changed
+npx @clafoutis/cli sync --force                 # Re-sync even if cached
+npx @clafoutis/cli sync --cwd ./apps/web
+npx @clafoutis/cli sync --dry-run               # Preview what would sync
 ```
 
 ### Monorepo Usage
@@ -176,10 +176,10 @@ npx clafoutis sync --dry-run               # Preview what would sync
 Use `--cwd <path>` on all CLI commands when running from a monorepo root:
 
 ```bash
-npx clafoutis init --producer --cwd ./packages/design-system
-npx clafoutis generate --cwd ./packages/design-system
-npx clafoutis format --cwd ./packages/design-system
-npx clafoutis sync --cwd ./apps/web
+npx @clafoutis/cli init --producer --cwd ./packages/design-system
+npx @clafoutis/cli generate --cwd ./packages/design-system
+npx @clafoutis/cli format --cwd ./packages/design-system
+npx @clafoutis/cli sync --cwd ./apps/web
 ```
 
 All relative paths in config/options are resolved from the provided `--cwd`. Producer output remains `./build` by default.
@@ -199,7 +199,7 @@ Create platform-specific generators when the built-ins don't fit:
 
 ```typescript
 // generators/brand-scss.ts
-import type { GeneratorPlugin } from 'clafoutis';
+import type { GeneratorPlugin } from '@clafoutis/cli';
 
 export const generate: GeneratorPlugin = async ({ tokensDir, outputDir, StyleDictionary }) => {
   const sd = new StyleDictionary({
@@ -222,13 +222,13 @@ Set `CLAFOUTIS_REPO_TOKEN` with a GitHub PAT that has `repo` scope:
 
 ```bash
 export CLAFOUTIS_REPO_TOKEN=ghp_xxxx
-npx clafoutis sync
+npx @clafoutis/cli sync
 ```
 
 In CI:
 
 ```yaml
-- run: npx clafoutis sync
+- run: npx @clafoutis/cli sync
   env:
     CLAFOUTIS_REPO_TOKEN: ${{ secrets.DESIGN_SYSTEM_TOKEN }}
 ```
