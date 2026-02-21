@@ -1,6 +1,6 @@
 {
   "name": "@clafoutis/cli",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "GitOps powered design system CLI - generate and sync design tokens",
   "author": "Dessert Labs",
   "license": "BUSL-1.1",

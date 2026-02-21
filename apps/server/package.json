@@ -1,7 +1,7 @@
 {
   "name": "@clafoutis/server",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Studio backend server - OAuth proxy and token generation",
   "author": "Dessert Labs",
   "license": "BUSL-1.1",
