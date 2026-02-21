@@ -3,12 +3,18 @@ import path from "node:path";
 
 import { logger } from "@clafoutis/shared";
 
+import {
+  resolveCommandCwd,
+  resolveInCwd,
+  validateCwdOption,
+} from "../utils/cwd";
 import { tokensDirNotFoundError } from "../utils/errors";
 
 interface FormatOptions {
   tokens?: string;
   check?: boolean;
   dryRun?: boolean;
+  cwd?: string;
 }
 
 /**
@@ -69,7 +75,9 @@ function formatJson(content: string): string {
  * Formats token files to ensure consistent JSON formatting.
  */
 export function formatCommand(options: FormatOptions): void {
-  const tokensDir = options.tokens || "./tokens";
+  validateCwdOption(options.cwd);
+  const commandCwd = resolveCommandCwd(options.cwd);
+  const tokensDir = resolveInCwd(commandCwd, options.tokens || "./tokens");
 
   if (!fs.existsSync(tokensDir)) {
     throw tokensDirNotFoundError(tokensDir);

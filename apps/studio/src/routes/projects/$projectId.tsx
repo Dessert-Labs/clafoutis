@@ -17,6 +17,7 @@ import {
   onGenerationStatusChange,
   regeneratePreview,
 } from "@/lib/preview-css";
+import { getProjectTokensPath } from "@/lib/project-metadata";
 import { getEditorStore, getTokenStore } from "@/lib/studio-api";
 import { loadTokensFromGitHub } from "@/lib/token-loader";
 
@@ -55,6 +56,7 @@ function ProjectLayoutRoute() {
     if (loadedProjectRef.current === projectId) return;
 
     const parsed = parseProjectId(projectId);
+    const tokensPath = getProjectTokensPath(projectId);
     if (!parsed) {
       const count = getTokenStore().getState().resolvedTokens.length;
       setTokenCount(count);
@@ -73,7 +75,7 @@ function ProjectLayoutRoute() {
     loadTokensFromGitHub(
       parsed.owner,
       parsed.repo,
-      "tokens",
+      tokensPath,
       accessTokenRef.current,
     )
       .then(async (result) => {
@@ -164,6 +166,7 @@ function ProjectLayoutRoute() {
           tokenCount={tokenCount}
           fileCount={fileCount}
           projectId={projectId}
+          tokensPath={getProjectTokensPath(projectId)}
           onRetry={handleRetry}
         >
           <Outlet />

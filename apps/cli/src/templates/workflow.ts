@@ -1,6 +1,7 @@
 /**
  * Returns the GitHub Actions workflow YAML for automatic token releases.
- * Triggers on push to main when tokens change, generates outputs, and creates a release.
+ * Triggers on push to main when tokens change, generates outputs,
+ * commits build artifacts back to the repo, and creates a release.
  */
 export function getWorkflowTemplate(): string {
   return `name: Design Token Release
@@ -10,6 +11,7 @@ on:
     branches: [main]
     paths:
       - 'tokens/**'
+      - '.clafoutis/producer.json'
 
 jobs:
   release:
@@ -34,6 +36,18 @@ jobs:
 
       - name: Generate tokens
         run: npx clafoutis generate
+
+      - name: Commit generated build artifacts
+        run: |
+          if [ -z "$(git status --porcelain build)" ]; then
+            echo "No build changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add build
+          git commit -m "chore: update generated build artifacts"
+          git push
 
       - name: Get next version
         id: version

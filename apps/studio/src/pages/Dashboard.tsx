@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { listUserRepos, parseRepoInput } from "@/lib/github-api";
 import { importFromFiles } from "@/lib/local-import";
 import { regeneratePreview } from "@/lib/preview-css";
+import { setProjectTokensPath } from "@/lib/project-metadata";
 import { getTokenStore } from "@/lib/studio-api";
 import { TEMPLATES, type TokenTemplate } from "@/lib/templates";
 
@@ -24,6 +25,7 @@ export function Dashboard() {
   const { addAlert } = useAlerts();
   const navigate = useNavigate();
   const [publicRepoInput, setPublicRepoInput] = useState("");
+  const [publicRepoSubfolder, setPublicRepoSubfolder] = useState("tokens");
   const [publicRepoError, setPublicRepoError] = useState("");
   const [showRepos, setShowRepos] = useState(false);
 
@@ -42,11 +44,13 @@ export function Dashboard() {
       );
       return;
     }
+    const projectId = `${parsed.owner}--${parsed.repo}`;
+    setProjectTokensPath(projectId, publicRepoSubfolder);
     navigate({
       to: "/projects/$projectId/tokens",
-      params: { projectId: `${parsed.owner}--${parsed.repo}` },
+      params: { projectId },
     });
-  }, [publicRepoInput, navigate]);
+  }, [publicRepoInput, publicRepoSubfolder, navigate]);
 
   const handlePublicRepoInputChange = useCallback((value: string) => {
     setPublicRepoInput(value);
@@ -118,6 +122,7 @@ export function Dashboard() {
       <DashboardView
         templates={TEMPLATES}
         publicRepoInput={publicRepoInput}
+        publicRepoSubfolder={publicRepoSubfolder}
         publicRepoError={publicRepoError}
         isAuthenticated={isAuthenticated}
         authLoading={authLoading}
@@ -125,17 +130,20 @@ export function Dashboard() {
         reposLoading={reposLoading}
         repos={repos}
         onPublicRepoInputChange={handlePublicRepoInputChange}
+        onPublicRepoSubfolderChange={setPublicRepoSubfolder}
         onOpenPublicRepo={handleOpenPublicRepo}
         onCreateFromTemplate={handleCreateFromTemplate}
         onImportFiles={handleImportFiles}
         onSignIn={handleSignInThenBrowse}
         onShowRepos={() => setShowRepos(true)}
-        onOpenRepo={(owner, name) =>
+        onOpenRepo={(owner, name) => {
+          const projectId = `${owner}--${name}`;
+          setProjectTokensPath(projectId, "tokens");
           navigate({
             to: "/projects/$projectId/tokens",
-            params: { projectId: `${owner}--${name}` },
-          })
-        }
+            params: { projectId },
+          });
+        }}
       />
     </AppLayout>
   );

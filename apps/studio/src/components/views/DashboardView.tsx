@@ -20,6 +20,7 @@ import { Loader } from "../ui/loader";
 interface DashboardViewProps {
   templates: TokenTemplate[];
   publicRepoInput: string;
+  publicRepoSubfolder: string;
   publicRepoError: string;
   isAuthenticated: boolean;
   authLoading: boolean;
@@ -27,6 +28,7 @@ interface DashboardViewProps {
   reposLoading: boolean;
   repos: GitHubRepo[] | undefined;
   onPublicRepoInputChange: (value: string) => void;
+  onPublicRepoSubfolderChange: (value: string) => void;
   onOpenPublicRepo: () => void;
   onCreateFromTemplate: (template: TokenTemplate) => void;
   onImportFiles: () => void;
@@ -38,6 +40,7 @@ interface DashboardViewProps {
 const DashboardView = ({
   templates,
   publicRepoInput,
+  publicRepoSubfolder,
   publicRepoError,
   isAuthenticated,
   authLoading,
@@ -45,6 +48,7 @@ const DashboardView = ({
   reposLoading,
   repos,
   onPublicRepoInputChange,
+  onPublicRepoSubfolderChange,
   onOpenPublicRepo,
   onCreateFromTemplate,
   onImportFiles,
@@ -121,6 +125,12 @@ const DashboardView = ({
               onKeyDown={(e) => {
                 if (e.key === "Enter") onOpenPublicRepo();
               }}
+            />
+            <Input
+              placeholder="Subfolder (default: tokens)"
+              value={publicRepoSubfolder}
+              onChange={(e) => onPublicRepoSubfolderChange(e.target.value)}
+              className="max-w-64"
             />
             <Button onClick={onOpenPublicRepo}>Open</Button>
           </div>

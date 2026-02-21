@@ -32,7 +32,8 @@ npx clafoutis init --producer
 git push  # GitHub Action runs generate and creates release automatically
 ```
 
-> If you opted out of the GitHub workflow during init, run `npx clafoutis generate` locally before pushing.
+The default workflow generates `build/`, commits updated `build/**` back to the repository, and creates a GitHub Release.
+If you opted out of the GitHub workflow during init, run `npx clafoutis generate` locally before pushing.
 
 **Consumers** (application developers) pin to a version and sync:
 
@@ -143,6 +144,7 @@ Initialize configuration with an interactive wizard, or use flags for CI:
 ```bash
 npx clafoutis init --producer              # Interactive producer setup
 npx clafoutis init --consumer --repo X/Y   # Interactive consumer setup
+npx clafoutis init --producer --cwd ./packages/design-system
 npx clafoutis init --non-interactive       # Skip prompts, use flags/defaults
 npx clafoutis init --dry-run               # Preview without writing files
 ```
@@ -154,6 +156,7 @@ Transform tokens into platform-specific outputs:
 ```bash
 npx clafoutis generate                     # Use config file
 npx clafoutis generate --tailwind --figma  # Specify generators
+npx clafoutis generate --cwd ./packages/design-system
 npx clafoutis generate --dry-run           # Preview output
 ```
 
@@ -164,8 +167,22 @@ Download tokens from a GitHub Release:
 ```bash
 npx clafoutis sync                         # Sync if version changed
 npx clafoutis sync --force                 # Re-sync even if cached
+npx clafoutis sync --cwd ./apps/web
 npx clafoutis sync --dry-run               # Preview what would sync
 ```
+
+### Monorepo Usage
+
+Use `--cwd <path>` on all CLI commands when running from a monorepo root:
+
+```bash
+npx clafoutis init --producer --cwd ./packages/design-system
+npx clafoutis generate --cwd ./packages/design-system
+npx clafoutis format --cwd ./packages/design-system
+npx clafoutis sync --cwd ./apps/web
+```
+
+All relative paths in config/options are resolved from the provided `--cwd`. Producer output remains `./build` by default.
 
 ## Custom Generators
 

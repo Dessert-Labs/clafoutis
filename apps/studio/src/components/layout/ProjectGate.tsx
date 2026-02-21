@@ -12,6 +12,7 @@ interface ProjectGateProps {
   tokenCount: number | null;
   fileCount: number | null;
   projectId: string;
+  tokensPath: string;
   onRetry: () => void;
   children: React.ReactNode;
 }
@@ -31,6 +32,7 @@ export function ProjectGate({
   tokenCount,
   fileCount,
   projectId,
+  tokensPath,
   onRetry,
   children,
 }: Readonly<ProjectGateProps>) {
@@ -75,8 +77,8 @@ export function ProjectGate({
         "Each token must include both $type and $value per the DTCG spec.";
     } else {
       message =
-        `No token files were found in the tokens/ directory of ${parsed.owner}/${parsed.repo}. ` +
-        "Make sure the repo has a tokens/ folder with .json files following the DTCG format.";
+        `No token files were found in the ${tokensPath}/ directory of ${parsed.owner}/${parsed.repo}. ` +
+        "Make sure that folder exists and contains .json files following the DTCG format.";
     }
 
     return (

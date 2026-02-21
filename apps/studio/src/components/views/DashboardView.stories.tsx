@@ -21,6 +21,7 @@ export const Default: Story = {
   args: {
     templates: TEMPLATES,
     publicRepoInput: "",
+    publicRepoSubfolder: "tokens",
     publicRepoError: "",
     isAuthenticated: false,
     authLoading: false,
@@ -28,6 +29,7 @@ export const Default: Story = {
     reposLoading: false,
     repos: undefined,
     onPublicRepoInputChange: noop,
+    onPublicRepoSubfolderChange: noop,
     onOpenPublicRepo: noop,
     onCreateFromTemplate: noop,
     onImportFiles: noop,
