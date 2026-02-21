@@ -166,8 +166,13 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
       } else {
         // Built-in generators from @clafoutis/generators package
         const builtInGenerators: Record<string, GeneratorModule> = {
-          tailwind: { generate: async () => tailwindGenerate(commandCwd) },
-          figma: { generate: async () => figmaGenerate(commandCwd) },
+          tailwind: {
+            generate: async (ctx) =>
+              tailwindGenerate(commandCwd, ctx.outputDir),
+          },
+          figma: {
+            generate: async (ctx) => figmaGenerate(commandCwd, ctx.outputDir),
+          },
         };
 
         if (!builtInGenerators[name]) {

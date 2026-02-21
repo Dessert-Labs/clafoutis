@@ -13,17 +13,16 @@ import tinycolor from "tinycolor2";
 
 // 0) CLEAN OUTPUT DIRECTORY
 // ----------------------------------------------------------------------------
-function cleanDist(cwd: string): void {
-  const distDir = path.resolve(cwd, "build/tailwind");
+function cleanDist(buildPath: string): void {
   try {
-    fs.rmSync(distDir, { recursive: true, force: true });
-    logger.info(`Removed ${distDir}`);
+    fs.rmSync(buildPath, { recursive: true, force: true });
+    logger.info(`Removed ${buildPath}`);
   } catch (err) {
-    logger.error(`Failed to remove ${distDir}: ${err}`);
+    logger.error(`Failed to remove ${buildPath}: ${err}`);
   }
 
-  fs.mkdirSync(distDir, { recursive: true });
-  logger.success(`Created fresh ${distDir}`);
+  fs.mkdirSync(buildPath, { recursive: true });
+  logger.success(`Created fresh ${buildPath}`);
 }
 
 // 1) TRANSFORMERS
@@ -336,11 +335,16 @@ export default {
 
 // 5) BUILD SCRIPTS
 // ----------------------------------------------------------------------------
-async function main(cwd: string = process.cwd()): Promise<void> {
+async function main(
+  cwd: string = process.cwd(),
+  outputDir?: string,
+): Promise<void> {
   const resolvedCwd = path.resolve(cwd);
-  const buildPath = path.join(resolvedCwd, "build", "tailwind") + "/";
+  const buildPath = path.resolve(
+    outputDir ?? path.join(resolvedCwd, "build", "tailwind"),
+  );
 
-  cleanDist(resolvedCwd);
+  cleanDist(buildPath);
 
   // Base styles
   {
