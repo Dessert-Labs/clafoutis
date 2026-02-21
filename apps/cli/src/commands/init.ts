@@ -23,6 +23,12 @@ import {
 import { getAllStarterTokens } from "../templates/tokens";
 import { getWorkflowPath, getWorkflowTemplate } from "../templates/workflow";
 import { fileExists } from "../utils/config";
+import {
+  displayPath,
+  resolveCommandCwd,
+  resolveInCwd,
+  validateCwdOption,
+} from "../utils/cwd";
 import { ClafoutisError } from "../utils/errors";
 
 export interface InitOptions {
@@ -37,6 +43,7 @@ export interface InitOptions {
   force?: boolean;
   dryRun?: boolean;
   nonInteractive?: boolean;
+  cwd?: string;
 }
 
 interface FileToCreate {
@@ -106,19 +113,23 @@ export async function initCommand(options: InitOptions): Promise<void> {
     );
   }
 
+  validateCwdOption(options.cwd);
+  const commandCwd = resolveCommandCwd(options.cwd);
+
   const isInteractive = !options.nonInteractive && process.stdin.isTTY;
   const isDryRun = options.dryRun ?? false;
 
   if (isInteractive) {
-    await runInteractiveInit(options, isDryRun);
+    await runInteractiveInit(options, isDryRun, commandCwd);
   } else {
-    await runNonInteractiveInit(options, isDryRun);
+    await runNonInteractiveInit(options, isDryRun, commandCwd);
   }
 }
 
 async function runInteractiveInit(
   options: InitOptions,
   isDryRun: boolean,
+  commandCwd: string,
 ): Promise<void> {
   showIntro(isDryRun);
 
@@ -142,13 +153,23 @@ async function runInteractiveInit(
     if (!answers) {
       return;
     }
-    await createProducerConfig(answers, options.force ?? false, isDryRun);
+    await createProducerConfig(
+      answers,
+      options.force ?? false,
+      isDryRun,
+      commandCwd,
+    );
   } else {
     const answers = await runConsumerWizard();
     if (!answers) {
       return;
     }
-    await createConsumerConfig(answers, options.force ?? false, isDryRun);
+    await createConsumerConfig(
+      answers,
+      options.force ?? false,
+      isDryRun,
+      commandCwd,
+    );
   }
 
   if (isDryRun) {
@@ -161,6 +182,7 @@ async function runInteractiveInit(
 async function runNonInteractiveInit(
   options: InitOptions,
   isDryRun: boolean,
+  commandCwd: string,
 ): Promise<void> {
   if (!options.producer && !options.consumer) {
     throw new ClafoutisError(
@@ -189,7 +211,12 @@ async function runNonInteractiveInit(
       workflow: options.workflow ?? true,
     };
 
-    await createProducerConfig(answers, options.force ?? false, isDryRun);
+    await createProducerConfig(
+      answers,
+      options.force ?? false,
+      isDryRun,
+      commandCwd,
+    );
   } else {
     const errors = validateConsumerFlags(options);
     if (errors.length > 0) {
@@ -251,7 +278,12 @@ async function runNonInteractiveInit(
       files,
     };
 
-    await createConsumerConfig(answers, options.force ?? false, isDryRun);
+    await createConsumerConfig(
+      answers,
+      options.force ?? false,
+      isDryRun,
+      commandCwd,
+    );
   }
 }
 
@@ -259,8 +291,9 @@ async function createProducerConfig(
   answers: ProducerWizardAnswers,
   force: boolean,
   dryRun: boolean,
+  commandCwd: string,
 ): Promise<void> {
-  const configPath = ".clafoutis/producer.json";
+  const configPath = resolveInCwd(commandCwd, ".clafoutis/producer.json");
 
   if (!force && (await fileExists(configPath))) {
     throw new ClafoutisError(
@@ -298,7 +331,10 @@ async function createProducerConfig(
 
   const starterTokens = getAllStarterTokens();
   for (const token of starterTokens) {
-    const tokenPath = path.join(answers.tokens, token.path);
+    const tokenPath = resolveInCwd(
+      commandCwd,
+      path.join(answers.tokens, token.path),
+    );
     if (!force && (await fileExists(tokenPath))) {
       continue;
     }
@@ -310,7 +346,7 @@ async function createProducerConfig(
   }
 
   if (answers.workflow) {
-    const workflowPath = getWorkflowPath();
+    const workflowPath = resolveInCwd(commandCwd, getWorkflowPath());
     if (force || !(await fileExists(workflowPath))) {
       filesToCreate.push({
         path: workflowPath,
@@ -321,18 +357,19 @@ async function createProducerConfig(
   }
 
   // Add .gitignore for producer repos
-  if (force || !(await fileExists(".gitignore"))) {
+  const gitignorePath = resolveInCwd(commandCwd, ".gitignore");
+  if (force || !(await fileExists(gitignorePath))) {
     filesToCreate.push({
-      path: ".gitignore",
+      path: gitignorePath,
       content: getProducerGitignore(),
       description: "Ignore build artifacts and release-assets",
     });
   }
 
   if (dryRun) {
-    showDryRunOutput(filesToCreate);
+    showDryRunOutput(filesToCreate, commandCwd);
   } else {
-    await writeFiles(filesToCreate);
+    await writeFiles(filesToCreate, commandCwd);
     showNextSteps("producer", answers);
   }
 }
@@ -341,8 +378,9 @@ async function createConsumerConfig(
   answers: ConsumerWizardAnswers,
   force: boolean,
   dryRun: boolean,
+  commandCwd: string,
 ): Promise<void> {
-  const configPath = ".clafoutis/consumer.json";
+  const configPath = resolveInCwd(commandCwd, ".clafoutis/consumer.json");
 
   if (!force && (await fileExists(configPath))) {
     throw new ClafoutisError(
@@ -367,7 +405,7 @@ async function createConsumerConfig(
   ];
 
   // Add .gitignore entry for consumer repos (append if exists)
-  const gitignorePath = ".gitignore";
+  const gitignorePath = resolveInCwd(commandCwd, ".gitignore");
   const consumerIgnore = getConsumerGitignore();
   if (await fileExists(gitignorePath)) {
     // Check if cache is already ignored
@@ -388,20 +426,20 @@ async function createConsumerConfig(
   }
 
   if (dryRun) {
-    showDryRunOutput(filesToCreate);
+    showDryRunOutput(filesToCreate, commandCwd);
   } else {
-    await writeFiles(filesToCreate);
+    await writeFiles(filesToCreate, commandCwd);
     showNextSteps("consumer", answers);
   }
 }
 
-function showDryRunOutput(files: FileToCreate[]): void {
+function showDryRunOutput(files: FileToCreate[], commandCwd: string): void {
   log.message("");
   log.step("Would create the following files:");
   log.message("");
 
   for (const file of files) {
-    log.message(`  ${file.path}`);
+    log.message(`  ${displayPath(commandCwd, file.path)}`);
     if (file.description) {
       log.message(`  └─ ${file.description}`);
     }
@@ -410,12 +448,15 @@ function showDryRunOutput(files: FileToCreate[]): void {
   log.message("");
 }
 
-async function writeFiles(files: FileToCreate[]): Promise<void> {
+async function writeFiles(
+  files: FileToCreate[],
+  commandCwd: string,
+): Promise<void> {
   for (const file of files) {
     const dir = path.dirname(file.path);
     await fs.mkdir(dir, { recursive: true });
     await fs.writeFile(file.path, file.content);
-    log.success(`Created ${file.path}`);
+    log.success(`Created ${displayPath(commandCwd, file.path)}`);
   }
 }
 

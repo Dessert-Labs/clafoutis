@@ -88,6 +88,7 @@ program
   .option("--tailwind", "Generate Tailwind output")
   .option("--figma", "Generate Figma variables")
   .option("-o, --output <dir>", "Output directory", "./build")
+  .option("--cwd <path>", "Run command as if from this directory")
   .option("--dry-run", "Preview changes without writing files")
   .action(withErrorHandling(generateCommand));
 
@@ -100,6 +101,7 @@ program
     "Path to config file",
     ".clafoutis/consumer.json",
   )
+  .option("--cwd <path>", "Run command as if from this directory")
   .option("--dry-run", "Preview changes without writing files")
   .action(withErrorHandling(syncCommand));
 
@@ -124,6 +126,7 @@ program
   .option("--force", "Overwrite existing configuration")
   .option("--dry-run", "Preview changes without writing files")
   .option("--non-interactive", "Skip prompts, use defaults or flags")
+  .option("--cwd <path>", "Run command as if from this directory")
   .action(withErrorHandling(initCommand));
 
 program
@@ -134,6 +137,7 @@ program
     "--check",
     "Check formatting without modifying files (fails if unformatted)",
   )
+  .option("--cwd <path>", "Run command as if from this directory")
   .option("--dry-run", "Preview changes without writing files")
   .action(withErrorHandling(formatCommand));
 

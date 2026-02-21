@@ -7,6 +7,11 @@ import { offerWizard } from "../cli/wizard";
 import type { ClafoutisConfig } from "../types";
 import { readCache, writeCache } from "../utils/cache";
 import { fileExists, readConfig } from "../utils/config";
+import {
+  resolveCommandCwd,
+  resolveInCwd,
+  validateCwdOption,
+} from "../utils/cwd";
 import { ClafoutisError, configNotFoundError } from "../utils/errors";
 import { downloadRelease } from "../utils/github";
 import { validateConsumerConfig } from "../utils/validate";
@@ -16,6 +21,7 @@ interface SyncOptions {
   force?: boolean;
   config?: string;
   dryRun?: boolean;
+  cwd?: string;
 }
 
 /**
@@ -24,12 +30,13 @@ interface SyncOptions {
 async function writeOutput(
   config: ClafoutisConfig,
   files: Map<string, string>,
+  commandCwd: string,
 ): Promise<void> {
   for (const [assetName, content] of files) {
     const configPath = config.files[assetName];
     if (!configPath) continue;
 
-    const outputPath = path.resolve(process.cwd(), configPath);
+    const outputPath = resolveInCwd(commandCwd, configPath);
 
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await fs.writeFile(outputPath, content);
@@ -42,7 +49,12 @@ async function writeOutput(
  * Downloads design tokens from a GitHub release and writes them to configured paths.
  */
 export async function syncCommand(options: SyncOptions): Promise<void> {
-  const configPath = options.config || ".clafoutis/consumer.json";
+  validateCwdOption(options.cwd);
+  const commandCwd = resolveCommandCwd(options.cwd);
+  const configPath = resolveInCwd(
+    commandCwd,
+    options.config || ".clafoutis/consumer.json",
+  );
 
   let config = await readConfig(configPath);
   if (!config) {
@@ -57,7 +69,7 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
     if (process.stdin.isTTY) {
       const shouldRunWizard = await offerWizard("consumer");
       if (shouldRunWizard) {
-        await initCommand({ consumer: true });
+        await initCommand({ consumer: true, cwd: commandCwd });
         config = await readConfig(configPath);
         if (!config) {
           throw configNotFoundError(configPath, true);
@@ -72,7 +84,7 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
 
   validateConsumerConfig(config);
 
-  const cachedVersion = await readCache();
+  const cachedVersion = await readCache(commandCwd);
   const isLatest = config.version === "latest";
 
   logger.info(`Repo: ${config.repo}`);
@@ -90,7 +102,7 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
   }
 
   const resolveOutputPaths = () =>
-    Object.values(config.files).map((p) => path.resolve(process.cwd(), p));
+    Object.values(config.files).map((p) => resolveInCwd(commandCwd, p));
 
   if (!isLatest && !options.force && config.version === cachedVersion) {
     const outputPaths = resolveOutputPaths();
@@ -121,15 +133,15 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
     }
   }
 
-  await writeOutput(config, files);
+  await writeOutput(config, files, commandCwd);
 
   // Cache the resolved tag, not "latest"
-  await writeCache(resolvedTag);
+  await writeCache(resolvedTag, commandCwd);
 
   logger.success(`Synced to ${resolvedTag}`);
 
   if (config.postSync) {
-    await runPostSync(config.postSync);
+    await runPostSync(config.postSync, commandCwd);
   }
 }
 
@@ -142,7 +154,7 @@ export async function syncCommand(options: SyncOptions): Promise<void> {
  * @param command - The shell command string to execute
  * @throws ClafoutisError if the command fails or exits with non-zero code
  */
-async function runPostSync(command: string): Promise<void> {
+async function runPostSync(command: string, commandCwd: string): Promise<void> {
   logger.info(`Running postSync: ${command}`);
 
   // Determine the shell based on platform
@@ -154,6 +166,7 @@ async function runPostSync(command: string): Promise<void> {
     const child = spawn(shell, shellArgs, {
       stdio: ["inherit", "pipe", "pipe"],
       env: process.env,
+      cwd: commandCwd,
     });
 
     let stdout = "";

@@ -67,12 +67,13 @@ npx clafoutis init --producer
 # Edit your tokens
 # tokens/colors/primitives.json
 
-# Push to GitHub - the workflow runs generate and creates a release automatically
+# Push to GitHub - the workflow runs generate, commits build/, and creates a release automatically
 git add . && git commit -m "Initial design system"
 git push origin main
 ```
 
 > If you opted out of the GitHub workflow during init, run `npx clafoutis generate` locally before pushing.
+> The default workflow always writes generated outputs to `build/` and commits `build/**` before creating the release.
 
 ### Producer Config: .clafoutis/producer.json
 
@@ -114,6 +115,7 @@ Options:
   --tailwind           Generate Tailwind output
   --figma              Generate Figma variables
   -o, --output <dir>   Output directory (default: ./build)
+  --cwd <path>         Run command as if from this directory
   --dry-run            Preview changes without writing files
 ```
 
@@ -123,8 +125,20 @@ When you run `npx clafoutis init --producer`, a GitHub Actions workflow is creat
 
 1. **Triggers** when you push changes to `tokens/` or `.clafoutis/producer.json`
 2. **Runs** `npx clafoutis generate` to create platform outputs
-3. **Creates a GitHub Release** with all generated files as assets
-4. **Auto-increments** the patch version (e.g., `v1.0.0` → `v1.0.1`)
+3. **Commits `build/**` back to the repository**
+4. **Creates a GitHub Release** with all generated files as assets
+5. **Auto-increments** the patch version (e.g., `v1.0.0` → `v1.0.1`)
+
+### Monorepo Usage
+
+Run commands from monorepo root by passing `--cwd`:
+
+```bash
+npx clafoutis init --producer --cwd ./packages/design-system
+npx clafoutis generate --cwd ./packages/design-system
+npx clafoutis format --cwd ./packages/design-system
+npx clafoutis sync --cwd ./apps/web
+```
 
 ### Manual Releases & Pre-release Versions
 
@@ -313,6 +327,7 @@ npx clafoutis sync [options]
 Options:
   -f, --force          Force sync even if versions match
   -c, --config <path>  Config file (default: .clafoutis/consumer.json)
+  --cwd <path>         Run command as if from this directory
   --dry-run            Preview changes without writing files
 ```
 

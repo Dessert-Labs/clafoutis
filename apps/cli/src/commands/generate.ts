@@ -10,6 +10,11 @@ import { offerWizard } from "../cli/wizard";
 import type { GeneratorContext, GeneratorPlugin } from "../types";
 import { fileExists, readProducerConfig } from "../utils/config";
 import {
+  resolveCommandCwd,
+  resolveInCwd,
+  validateCwdOption,
+} from "../utils/cwd";
+import {
   ClafoutisError,
   configNotFoundError,
   generatorNotFoundError,
@@ -25,6 +30,7 @@ interface GenerateOptions {
   figma?: boolean;
   output?: string;
   dryRun?: boolean;
+  cwd?: string;
 }
 
 interface GeneratorModule {
@@ -36,8 +42,11 @@ interface GeneratorModule {
  * Supports both JavaScript and TypeScript files.
  * Resolves relative paths against the current working directory.
  */
-async function loadPlugin(pluginPath: string): Promise<GeneratorModule> {
-  const absolutePath = path.resolve(process.cwd(), pluginPath);
+async function loadPlugin(
+  pluginPath: string,
+  commandCwd: string,
+): Promise<GeneratorModule> {
+  const absolutePath = resolveInCwd(commandCwd, pluginPath);
 
   if (pluginPath.endsWith(".ts")) {
     registerTsx();
@@ -52,7 +61,12 @@ async function loadPlugin(pluginPath: string): Promise<GeneratorModule> {
  * Reads configuration, validates it, and runs enabled generators.
  */
 export async function generateCommand(options: GenerateOptions): Promise<void> {
-  const configPath = options.config || ".clafoutis/producer.json";
+  validateCwdOption(options.cwd);
+  const commandCwd = resolveCommandCwd(options.cwd);
+  const configPath = resolveInCwd(
+    commandCwd,
+    options.config || ".clafoutis/producer.json",
+  );
 
   let config = await readProducerConfig(configPath);
 
@@ -68,7 +82,7 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     if (process.stdin.isTTY) {
       const shouldRunWizard = await offerWizard("producer");
       if (shouldRunWizard) {
-        await initCommand({ producer: true });
+        await initCommand({ producer: true, cwd: commandCwd });
         config = await readProducerConfig(configPath);
         if (!config) {
           throw configNotFoundError(configPath, false);
@@ -100,8 +114,8 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
   }
 
   // Resolve paths relative to current working directory (project root)
-  const tokensDir = path.resolve(process.cwd(), config.tokens || "./tokens");
-  const outputDir = path.resolve(process.cwd(), config.output || "./build");
+  const tokensDir = resolveInCwd(commandCwd, config.tokens || "./tokens");
+  const outputDir = resolveInCwd(commandCwd, config.output || "./build");
 
   if (!(await fileExists(tokensDir))) {
     throw tokensDirNotFoundError(tokensDir);
@@ -137,7 +151,7 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
 
       if (typeof value === "string") {
         try {
-          generatorModule = await loadPlugin(value);
+          generatorModule = await loadPlugin(value, commandCwd);
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : String(err);
           throw pluginLoadError(value, errorMessage);
