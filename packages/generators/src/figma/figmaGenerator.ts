@@ -30,8 +30,8 @@ interface FigmaCollection {
 }
 
 // Clean output directory
-function cleanDist(): void {
-  const distDir = path.resolve("build/figma");
+function cleanDist(cwd: string): void {
+  const distDir = path.resolve(cwd, "build/figma");
   try {
     fs.rmSync(distDir, { recursive: true, force: true });
     logger.info(`Removed ${distDir}`);
@@ -193,17 +193,18 @@ function getFigmaVariableType(tokenType: string): string {
 }
 
 // Main build function
-async function main(): Promise<void> {
-  cleanDist();
+async function main(cwd: string = process.cwd()): Promise<void> {
+  const resolvedCwd = path.resolve(cwd);
+  cleanDist(resolvedCwd);
 
-  const sourceFiles = ["tokens/**/*.json"];
+  const sourceFiles = [path.join(resolvedCwd, "tokens/**/*.json")];
 
   const SD = new StyleDictionary({
     source: sourceFiles,
     platforms: {
       figma: {
         transforms: ["figma/color", "figma/dimension", "figma/fontWeight"],
-        buildPath: "build/figma/",
+        buildPath: path.join(resolvedCwd, "build/figma/"),
         files: [
           {
             destination: "variables.json",

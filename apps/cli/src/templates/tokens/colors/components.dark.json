@@ -150,21 +150,21 @@
       "default": {
         "bg": {
           "$type": "color",
-          "$value": "{colors.slate.1200}"
+          "$value": "{colors.state.info.primary}"
         },
         "text": {
           "$type": "color",
-          "$value": "{colors.slate.100}"
+          "$value": "{colors.text.inverse}"
         }
       },
       "secondary": {
         "bg": {
           "$type": "color",
-          "$value": "{colors.slate.500}"
+          "$value": "{colors.state.info.bg}"
         },
         "text": {
           "$type": "color",
-          "$value": "{colors.slate.1200}"
+          "$value": "{colors.state.info.text}"
         }
       },
       "outline": {
@@ -184,41 +184,41 @@
       "info": {
         "bg": {
           "$type": "color",
-          "$value": "{colors.blue.900}"
+          "$value": "{colors.state.info.primary}"
         },
         "text": {
           "$type": "color",
-          "$value": "{colors.slate.100}"
+          "$value": "{colors.text.inverse}"
         }
       },
       "success": {
         "bg": {
           "$type": "color",
-          "$value": "{colors.green.900}"
+          "$value": "{colors.state.success.primary}"
         },
         "text": {
           "$type": "color",
-          "$value": "{colors.slate.100}"
+          "$value": "{colors.text.inverse}"
         }
       },
       "warning": {
         "bg": {
           "$type": "color",
-          "$value": "{colors.yellow.900}"
+          "$value": "{colors.state.warning.primary}"
         },
         "text": {
           "$type": "color",
-          "$value": "{colors.slate.100}"
+          "$value": "{colors.state.warning.text}"
         }
       },
       "error": {
         "bg": {
           "$type": "color",
-          "$value": "{colors.red.900}"
+          "$value": "{colors.state.error.primary}"
         },
         "text": {
           "$type": "color",
-          "$value": "{colors.slate.100}"
+          "$value": "{colors.text.inverse}"
         }
       }
     },
