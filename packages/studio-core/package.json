@@ -1,7 +1,7 @@
 {
   "name": "@clafoutis/studio-core",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Shared design system editor engine for Clafoutis Studio",
   "author": "Dessert Labs",
   "license": "BUSL-1.1",
