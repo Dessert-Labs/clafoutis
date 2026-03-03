@@ -31,10 +31,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
     await fs.rm(tempDir, { recursive: true });
   });
 
-  // Skipped: requires mock-design-system to publish a new release with motion token assets
-  // (tailwind.base.css, tailwind.tailwind.base.js). Re-enable after publishing
-  // @clafoutis/generators and @clafoutis/cli and cutting a new mock-design-system release.
-  it.skip('syncs latest release from mock-design-system', async () => {
+  it('syncs latest release from mock-design-system', async () => {
     // Create consumer config
     const config = {
       repo: MOCK_DESIGN_SYSTEM_REPO,
@@ -82,10 +79,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
     expect(tailwindTokens).toContain('transitionTimingFunction');
   });
 
-  // Skipped: requires mock-design-system to publish a new release with tailwind.motion-reduced.css.
-  // Re-enable after publishing @clafoutis/generators and @clafoutis/cli and cutting a new
-  // mock-design-system release.
-  it.skip('syncs motion-reduced.css from latest release', async () => {
+  it('syncs motion-reduced.css from latest release', async () => {
     const config = {
       repo: MOCK_DESIGN_SYSTEM_REPO,
       version: 'latest',
