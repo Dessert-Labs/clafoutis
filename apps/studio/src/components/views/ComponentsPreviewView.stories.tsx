@@ -171,3 +171,17 @@ export const NoTokens: Story = {
     colorTokens: [],
   },
 };
+
+export const MotionSection: Story = {
+  args: {
+    ...Default.args,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Select "Motion" from the sidebar to preview duration, easing, and semantic motion token demos. Uses CSS custom properties (--duration-*, --easing-*, --motion-*) with sensible fallbacks when tokens are absent.',
+      },
+    },
+  },
+};

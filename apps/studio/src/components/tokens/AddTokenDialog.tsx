@@ -39,6 +39,7 @@ const TOKEN_TYPES: DTCGTokenType[] = [
   "fontStyle",
   "duration",
   "cubicBezier",
+  "string",
   "number",
   "strokeStyle",
   "border",
@@ -62,6 +63,7 @@ function getValuePlaceholder(type: DTCGTokenType): string {
     dimension: "16px",
     duration: "250ms or {duration.normal}",
     cubicBezier: "[0.4, 0, 0.2, 1]",
+    string: "steps(4, end) or linear(0, 0.2 30%, 1)",
   };
   return placeholders[type] ?? "Enter value";
 }
