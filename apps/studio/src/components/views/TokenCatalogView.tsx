@@ -1,6 +1,6 @@
 import type { ResolvedToken } from "@clafoutis/studio-core";
 import { Link } from "@tanstack/react-router";
-import { Palette, Ruler, Sparkles, Type } from "lucide-react";
+import { Palette, Ruler, Sparkles, Timer, Type } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
@@ -28,6 +28,12 @@ const categories = [
     label: "Shadows",
     icon: Sparkles,
     description: "Box shadows and elevation tokens",
+  },
+  {
+    id: "motion",
+    label: "Motion",
+    icon: Timer,
+    description: "Durations, easing curves, and semantic motion presets",
   },
 ];
 

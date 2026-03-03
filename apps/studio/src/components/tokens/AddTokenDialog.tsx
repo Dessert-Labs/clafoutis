@@ -53,7 +53,18 @@ const CATEGORY_TYPE_MAP: Record<string, DTCGTokenType> = {
   typography: "typography",
   dimensions: "dimension",
   shadows: "shadow",
+  motion: "duration",
 };
+
+function getValuePlaceholder(type: DTCGTokenType): string {
+  const placeholders: Partial<Record<DTCGTokenType, string>> = {
+    color: "#ff0000 or {colors.slate.100}",
+    dimension: "16px",
+    duration: "250ms or {duration.normal}",
+    cubicBezier: "[0.4, 0, 0.2, 1]",
+  };
+  return placeholders[type] ?? "Enter value";
+}
 
 /**
  * Validates a token path against existing tokens.
@@ -196,13 +207,7 @@ export default function AddTokenDialog({
               id="token-value"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder={
-                type === "color"
-                  ? "#ff0000 or {colors.slate.100}"
-                  : type === "dimension"
-                    ? "16px"
-                    : "Enter value"
-              }
+              placeholder={getValuePlaceholder(type)}
               required
             />
             <p className="mt-1 text-xs text-studio-text-muted">

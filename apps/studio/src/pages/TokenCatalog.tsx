@@ -9,6 +9,7 @@ const CATEGORY_TYPES: Record<string, string[]> = {
   typography: ["fontFamily", "fontWeight", "fontStyle", "typography"],
   dimensions: ["dimension", "number"],
   shadows: ["shadow"],
+  motion: ["duration", "cubicBezier"],
 };
 
 export function TokenCatalog() {
@@ -21,18 +22,13 @@ export function TokenCatalog() {
   );
 
   const categoryCounts = useMemo(
-    () => ({
-      colors: tokens.filter((t) => CATEGORY_TYPES.colors.includes(t.type))
-        .length,
-      typography: tokens.filter((t) =>
-        CATEGORY_TYPES.typography.includes(t.type),
-      ).length,
-      dimensions: tokens.filter((t) =>
-        CATEGORY_TYPES.dimensions.includes(t.type),
-      ).length,
-      shadows: tokens.filter((t) => CATEGORY_TYPES.shadows.includes(t.type))
-        .length,
-    }),
+    () =>
+      Object.fromEntries(
+        Object.entries(CATEGORY_TYPES).map(([category, types]) => [
+          category,
+          tokens.filter((t) => types.includes(t.type)).length,
+        ]),
+      ),
     [tokens],
   );
 

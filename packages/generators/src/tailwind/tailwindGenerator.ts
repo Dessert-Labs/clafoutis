@@ -108,12 +108,29 @@ StyleDictionary.registerTransform({
   },
 });
 
+/**
+ * Transforms cubicBezier array values to valid CSS cubic-bezier() functions.
+ * e.g. [0.4, 0, 0.2, 1] -> "cubic-bezier(0.4, 0, 0.2, 1)"
+ * Without this, arrays would be coerced to comma-joined strings like "0.4,0,0.2,1".
+ */
+StyleDictionary.registerTransform({
+  name: "cubicBezier/css",
+  type: "value",
+  filter: (token: DesignToken) => token.original.$type === "cubicBezier",
+  transform: (token: DesignToken) => {
+    const value = token.original.$value;
+    if (!Array.isArray(value) || value.length !== 4) return String(value);
+    return `cubic-bezier(${value.join(", ")})`;
+  },
+});
+
 // Some built-in transforms
 const defaultTransforms = [
   "attribute/cti",
   "color/spaceRGB",
   "size/px",
   "name/kebab",
+  "cubicBezier/css",
 ];
 
 const tailwindTransforms = [
@@ -121,6 +138,7 @@ const tailwindTransforms = [
   "color/spaceRGB",
   "size/px",
   "name/kebabWithCamel",
+  "cubicBezier/css",
 ];
 
 StyleDictionary.registerTransformGroup({
@@ -132,6 +150,7 @@ StyleDictionary.registerTransformGroup({
     "name/kebab",
     "shadow/css/shorthand",
     "dimension/px",
+    "cubicBezier/css",
   ],
 });
 
@@ -238,12 +257,40 @@ StyleDictionary.registerFormat({
 /* Import Generated Design Token Files */
 @import "./base.css";
 @import "./dark.css";
+@import "./motion-reduced.css";
 
 /* Tailwind Base, Components, and Utilities */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 `.trimStart();
+
+    return header + content;
+  },
+});
+
+/**
+ * Generates a prefers-reduced-motion override that zeroes all duration tokens.
+ * Consumers get accessibility-correct motion behaviour out of the box.
+ */
+StyleDictionary.registerFormat({
+  name: "css/reduced-motion",
+  format: async function ({ file, options, dictionary }) {
+    const header = await fileHeader({ file, options });
+
+    const durationTokens = dictionary.allTokens.filter(
+      (token) => token.original.$type === "duration",
+    );
+
+    if (durationTokens.length === 0) {
+      return header + "/* No duration tokens — nothing to override. */\n";
+    }
+
+    const overrides = durationTokens
+      .map((token) => `    --${toKebabCase(token.name)}: 0ms;`)
+      .join("\n");
+
+    const content = `@media (prefers-reduced-motion: reduce) {\n  :root {\n${overrides}\n  }\n}\n`;
 
     return header + content;
   },
@@ -266,6 +313,13 @@ StyleDictionary.registerFormat({
       },
     };
 
+    // Map top-level token group names to Tailwind theme section keys.
+    // Tokens not listed here fall through to a direct path mapping.
+    const TAILWIND_KEY_MAP: Record<string, string> = {
+      duration: "transitionDuration",
+      easing: "transitionTimingFunction",
+    };
+
     // Insert tokens into partialConfig.theme.extend
     dictionary.allTokens.forEach((token) => {
       let cssRef;
@@ -277,11 +331,17 @@ StyleDictionary.registerFormat({
 
       // Map token names to Tailwind theme keys
       const segments = token.name.split("-");
+      const topLevel = segments[0];
 
-      // "color" tokens should go into "colors" (Tailwind's expected key)
-      if (segments[0] === "color") {
+      if (topLevel === "color") {
+        // "color" tokens go into "colors" (Tailwind's expected key)
         const colorPath = ["colors", ...segments.slice(1)];
         setNestedProperty(partialConfig.theme.extend, colorPath, cssRef);
+      } else if (TAILWIND_KEY_MAP[topLevel]) {
+        // Motion tokens: remap top-level group to the Tailwind theme key
+        const tailwindKey = TAILWIND_KEY_MAP[topLevel];
+        const subPath = [tailwindKey, ...segments.slice(1)];
+        setNestedProperty(partialConfig.theme.extend, subPath, cssRef);
       } else {
         setNestedProperty(partialConfig.theme.extend, segments, cssRef);
       }
@@ -379,6 +439,13 @@ async function main(
               format: "css/index-file",
               options: {
                 fileHeader: "canEditHeader",
+              },
+            },
+            {
+              destination: "motion-reduced.css",
+              format: "css/reduced-motion",
+              options: {
+                fileHeader: "doNotEditWarningHeader",
               },
             },
           ],

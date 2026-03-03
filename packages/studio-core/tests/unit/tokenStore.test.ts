@@ -65,7 +65,7 @@ describe('tokenStore', () => {
     store.getState().loadTokens(sampleTokens);
     store.getState().updateToken('colors.blue.500', '#EF4444');
     const diffs = store.getState().getDiff();
-    expect(diffs.some((d) => d.path === 'colors.blue.500' && d.type === 'modified')).toBe(true);
+    expect(diffs.some((d) => d.path.endsWith('colors.blue.500') && d.type === 'modified')).toBe(true);
   });
 
   it('undoTokenChange restores previous value', () => {

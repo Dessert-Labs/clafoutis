@@ -99,10 +99,26 @@ export function bridgeFontWeight(token: ResolvedToken): number | null {
   return null;
 }
 
+/** Converts a resolved DTCG duration token to its string value (e.g. "150ms"). */
+export function bridgeDuration(token: ResolvedToken): string | null {
+  const value = token.resolvedValue;
+  if (typeof value !== "string") return null;
+  if (!/^\d+(\.\d+)?(ms|s)$/.test(value)) return null;
+  return value;
+}
+
+/** Converts a resolved DTCG cubicBezier token to a 4-number array. */
+export function bridgeCubicBezier(token: ResolvedToken): number[] | null {
+  const value = token.resolvedValue;
+  if (!Array.isArray(value) || value.length !== 4) return null;
+  if (!value.every((v) => typeof v === "number" && isFinite(v))) return null;
+  return value as number[];
+}
+
 /** Dispatches to the appropriate bridge function based on token type. */
 export function bridgeTokenToCanvas(
   token: ResolvedToken,
-): SolidPaint | Effect | number | string | null {
+): SolidPaint | Effect | number | string | number[] | null {
   switch (token.type) {
     case "color":
       return bridgeColorToPaint(token);
@@ -115,6 +131,10 @@ export function bridgeTokenToCanvas(
       return bridgeFontFamily(token);
     case "fontWeight":
       return bridgeFontWeight(token);
+    case "duration":
+      return bridgeDuration(token);
+    case "cubicBezier":
+      return bridgeCubicBezier(token);
     default:
       return null;
   }
