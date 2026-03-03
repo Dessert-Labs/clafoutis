@@ -7,6 +7,7 @@ export function getWorkflowTemplate(): string {
   return `name: Design Token Release
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
