@@ -1,5 +1,12 @@
 # @clafoutis/server
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [981c701]
+  - @clafoutis/generators@1.1.0
+
 ## 1.0.1
 
 ### Patch Changes
