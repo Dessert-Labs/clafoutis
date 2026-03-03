@@ -7,6 +7,7 @@ import type {
 const REFERENCE_PATTERN = /^\{([^}]+)\}$/;
 const HEX_PATTERN = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 const DIMENSION_PATTERN = /^(?:\d+|\d*\.\d+)(px|rem|em|%|pt|vw|vh)?$/;
+const DURATION_PATTERN = /^\d+(\.\d+)?(ms|s)$/;
 
 function isToken(value: unknown): value is DTCGToken {
   return (
@@ -57,6 +58,16 @@ function validateFontWeight(value: unknown): boolean {
     return !isNaN(num) && num >= 1 && num <= 1000;
   }
   return false;
+}
+
+function validateDuration(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  return DURATION_PATTERN.test(value);
+}
+
+function validateCubicBezier(value: unknown): boolean {
+  if (!Array.isArray(value) || value.length !== 4) return false;
+  return value.every((v) => typeof v === "number" && isFinite(v));
 }
 
 /** Validates all tokens in the given file set and returns any issues found. */
@@ -131,6 +142,28 @@ export function validateTokens(
             path,
             severity: "warning",
             message: `Invalid font weight: "${String(token.$value)}"`,
+            code: "INVALID_VALUE",
+          });
+        }
+        break;
+
+      case "duration":
+        if (!validateDuration(token.$value)) {
+          results.push({
+            path,
+            severity: "error",
+            message: `Invalid duration value: "${String(token.$value)}" — must be a number followed by "ms" or "s" (e.g. "150ms", "0.5s")`,
+            code: "INVALID_VALUE",
+          });
+        }
+        break;
+
+      case "cubicBezier":
+        if (!validateCubicBezier(token.$value)) {
+          results.push({
+            path,
+            severity: "error",
+            message: `Invalid cubicBezier value: must be an array of exactly 4 numbers`,
             code: "INVALID_VALUE",
           });
         }

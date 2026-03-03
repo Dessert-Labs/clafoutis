@@ -58,6 +58,80 @@ describe('Producer E2E', () => {
     expect(tailwindOutputExists).toBe(true);
   });
 
+  it('generate produces motion token CSS variables', async () => {
+    execSync(`node ${cliBin} init --producer`, { cwd: tempDir, stdio: 'pipe' });
+    execSync(`node ${cliBin} generate`, { cwd: tempDir, stdio: 'pipe' });
+
+    const baseCSS = await fs.readFile(
+      path.join(tempDir, 'build', 'tailwind', 'base.css'),
+      'utf-8'
+    );
+
+    expect(baseCSS).toContain('--duration-fast');
+    expect(baseCSS).toContain('--duration-normal');
+    expect(baseCSS).toContain('--easing-default');
+    // cubicBezier values must be emitted as CSS functions, not raw arrays
+    expect(baseCSS).toContain('cubic-bezier(');
+    expect(baseCSS).not.toMatch(/--easing-\w+:\s*[\d.,\s]+;/);
+  });
+
+  it('generate produces motion-reduced.css with prefers-reduced-motion block', async () => {
+    execSync(`node ${cliBin} init --producer`, { cwd: tempDir, stdio: 'pipe' });
+    execSync(`node ${cliBin} generate`, { cwd: tempDir, stdio: 'pipe' });
+
+    const reducedExists = await fileExists(
+      path.join(tempDir, 'build', 'tailwind', 'motion-reduced.css')
+    );
+    expect(reducedExists).toBe(true);
+
+    const reducedCSS = await fs.readFile(
+      path.join(tempDir, 'build', 'tailwind', 'motion-reduced.css'),
+      'utf-8'
+    );
+
+    expect(reducedCSS).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(reducedCSS).toContain('--duration-fast: 0ms');
+    expect(reducedCSS).toContain('--duration-normal: 0ms');
+  });
+
+  it('generate maps duration and easing tokens to Tailwind theme keys', async () => {
+    execSync(`node ${cliBin} init --producer`, { cwd: tempDir, stdio: 'pipe' });
+    execSync(`node ${cliBin} generate`, { cwd: tempDir, stdio: 'pipe' });
+
+    const tailwindBase = await fs.readFile(
+      path.join(tempDir, 'build', 'tailwind', 'tailwind.base.js'),
+      'utf-8'
+    );
+
+    expect(tailwindBase).toContain('transitionDuration');
+    expect(tailwindBase).toContain('transitionTimingFunction');
+    expect(tailwindBase).toContain('var(--duration-fast)');
+    expect(tailwindBase).toContain('var(--easing-default)');
+  });
+
+  it('init --producer scaffolds motion token template', async () => {
+    execSync(`node ${cliBin} init --producer`, { cwd: tempDir, stdio: 'pipe' });
+
+    const motionExists = await fileExists(
+      path.join(tempDir, 'tokens', 'motion', 'base.json')
+    );
+    expect(motionExists).toBe(true);
+
+    const motionTokens = JSON.parse(
+      await fs.readFile(
+        path.join(tempDir, 'tokens', 'motion', 'base.json'),
+        'utf-8'
+      )
+    );
+
+    expect(motionTokens).toHaveProperty('duration');
+    expect(motionTokens).toHaveProperty('easing');
+    expect(motionTokens).toHaveProperty('motion');
+    expect(motionTokens.duration.fast.$type).toBe('duration');
+    expect(motionTokens.easing.default.$type).toBe('cubicBezier');
+    expect(Array.isArray(motionTokens.easing.default.$value)).toBe(true);
+  });
+
   it('generate --dry-run does not create files', async () => {
     execSync(`node ${cliBin} init --producer`, { cwd: tempDir, stdio: 'pipe' });
 

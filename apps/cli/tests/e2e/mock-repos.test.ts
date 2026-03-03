@@ -66,9 +66,48 @@ describe('E2E: mock-design-system → mock-frontend', () => {
       'utf-8'
     );
 
+    // Color tokens
     expect(baseCss).toContain('--colors-button-primary-bg');
+    // Motion tokens
+    expect(baseCss).toContain('--duration-fast');
+    expect(baseCss).toContain('--easing-default');
+    expect(baseCss).toContain('cubic-bezier(');
+    // Tailwind config
     expect(tailwindTokens).toContain('darkMode');
     expect(tailwindTokens).toContain('colors');
+    expect(tailwindTokens).toContain('transitionDuration');
+    expect(tailwindTokens).toContain('transitionTimingFunction');
+  });
+
+  it('syncs motion-reduced.css from latest release', async () => {
+    const config = {
+      repo: MOCK_DESIGN_SYSTEM_REPO,
+      version: 'latest',
+      files: {
+        'tailwind.motion-reduced.css': 'src/styles/motion-reduced.css',
+      },
+    };
+
+    await fs.mkdir(path.join(tempDir, '.clafoutis'), { recursive: true });
+    await fs.writeFile(
+      path.join(tempDir, '.clafoutis/consumer.json'),
+      JSON.stringify(config, null, 2)
+    );
+
+    execSync(`node ${cliBin} sync`, {
+      cwd: tempDir,
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: process.env,
+    });
+
+    const reducedCSS = await fs.readFile(
+      path.join(tempDir, 'src/styles/motion-reduced.css'),
+      'utf-8'
+    );
+
+    expect(reducedCSS).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(reducedCSS).toContain('--duration-fast: 0ms');
   });
 
   it(`respects version pinning (${PINNED_VERSION})`, async () => {

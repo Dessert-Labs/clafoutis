@@ -82,6 +82,189 @@ const minimalTypography: DTCGTokenFile = {
   },
 };
 
+const minimalMotion: DTCGTokenFile = {
+  duration: {
+    none: {
+      $type: "duration",
+      $value: "0ms",
+      $description: "No animation — explicit off switch",
+    },
+    instant: {
+      $type: "duration",
+      $value: "50ms",
+      $description: "Near-instant feedback (ripples, focus rings)",
+    },
+    fast: {
+      $type: "duration",
+      $value: "100ms",
+      $description: "Micro-interactions (hover, toggle, checkbox)",
+    },
+    moderate: {
+      $type: "duration",
+      $value: "150ms",
+      $description: "Small transitions (color shifts, opacity)",
+    },
+    normal: {
+      $type: "duration",
+      $value: "250ms",
+      $description: "Default transition (expand, collapse, slide)",
+    },
+    slow: {
+      $type: "duration",
+      $value: "400ms",
+      $description: "Pronounced motion (modals, page transitions)",
+    },
+    deliberate: {
+      $type: "duration",
+      $value: "700ms",
+      $description: "Large-scale motion (complex choreography)",
+    },
+    leisurely: {
+      $type: "duration",
+      $value: "1000ms",
+      $description: "Background/ambient motion (skeleton shimmer)",
+    },
+  },
+  easing: {
+    linear: {
+      $type: "cubicBezier",
+      $value: [0, 0, 1, 1],
+      $description: "Constant speed — progress bars, loaders",
+    },
+    default: {
+      $type: "cubicBezier",
+      $value: [0.4, 0, 0.2, 1],
+      $description: "General-purpose ease — smooth and natural",
+    },
+    in: {
+      $type: "cubicBezier",
+      $value: [0.4, 0, 1, 1],
+      $description: "Accelerate — elements leaving the screen",
+    },
+    out: {
+      $type: "cubicBezier",
+      $value: [0, 0, 0.2, 1],
+      $description: "Decelerate — elements entering the screen",
+    },
+    inOut: {
+      $type: "cubicBezier",
+      $value: [0.4, 0, 0.2, 1],
+      $description: "Symmetric ease — expand/collapse, resize",
+    },
+    spring: {
+      $type: "cubicBezier",
+      $value: [0.175, 0.885, 0.32, 1.275],
+      $description: "Overshoot bounce — buttons, toasts, playful UI",
+    },
+    bounce: {
+      $type: "cubicBezier",
+      $value: [0.34, 1.56, 0.64, 1],
+      $description: "Strong overshoot — attention-grabbing entrances",
+    },
+    snappy: {
+      $type: "cubicBezier",
+      $value: [0.2, 0, 0, 1],
+      $description: "Quick start, gentle stop — tabs, nav, chips",
+    },
+    gentle: {
+      $type: "cubicBezier",
+      $value: [0.25, 0.1, 0.25, 1],
+      $description: "Soft, subtle ease — tooltips, fades",
+    },
+    expressive: {
+      $type: "cubicBezier",
+      $value: [0.16, 1, 0.3, 1],
+      $description: "Dramatic deceleration — hero sections, modals",
+    },
+  },
+  motion: {
+    micro: {
+      duration: {
+        $type: "duration",
+        $value: "{duration.fast}",
+        $description: "Hover states, toggles, checkbox ticks",
+      },
+      easing: {
+        $type: "cubicBezier",
+        $value: "{easing.default}",
+        $description: "Default easing for micro-interactions",
+      },
+    },
+    small: {
+      duration: {
+        $type: "duration",
+        $value: "{duration.moderate}",
+        $description: "Color shifts, opacity changes, focus rings",
+      },
+      easing: {
+        $type: "cubicBezier",
+        $value: "{easing.snappy}",
+        $description: "Snappy easing for small transitions",
+      },
+    },
+    expand: {
+      duration: {
+        $type: "duration",
+        $value: "{duration.normal}",
+        $description: "Accordions, dropdowns, menus opening",
+      },
+      easing: {
+        $type: "cubicBezier",
+        $value: "{easing.out}",
+        $description: "Decelerate for expand/reveal",
+      },
+    },
+    enter: {
+      duration: {
+        $type: "duration",
+        $value: "{duration.normal}",
+        $description: "Content appearing — modals, toasts, popovers",
+      },
+      easing: {
+        $type: "cubicBezier",
+        $value: "{easing.out}",
+        $description: "Decelerate for enter transitions",
+      },
+    },
+    exit: {
+      duration: {
+        $type: "duration",
+        $value: "{duration.fast}",
+        $description: "Content disappearing — faster than enter",
+      },
+      easing: {
+        $type: "cubicBezier",
+        $value: "{easing.in}",
+        $description: "Accelerate for exit transitions",
+      },
+    },
+    page: {
+      duration: {
+        $type: "duration",
+        $value: "{duration.slow}",
+        $description: "Page-level transitions, route changes",
+      },
+      easing: {
+        $type: "cubicBezier",
+        $value: "{easing.expressive}",
+        $description: "Dramatic easing for page transitions",
+      },
+    },
+    loading: {
+      duration: {
+        $type: "duration",
+        $value: "{duration.leisurely}",
+        $description: "Skeleton shimmer, spinner cycles",
+      },
+      easing: {
+        $type: "cubicBezier",
+        $value: "{easing.linear}",
+        $description: "Constant speed for loading indicators",
+      },
+    },
+  },
+};
+
 const minimalDimensions: DTCGTokenFile = {
   spacing: {
     0: { $type: "dimension", $value: "0px" },
@@ -112,6 +295,7 @@ export const TEMPLATES: TokenTemplate[] = [
       "colors/semantics.json": minimalSemantics,
       "typography/base.json": minimalTypography,
       "dimensions/base.json": minimalDimensions,
+      "motion/base.json": minimalMotion,
     },
   },
   {

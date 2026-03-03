@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { bridgeColorToPaint, bridgeDimensionToNumber, bridgeFontWeight, bridgeShadowToEffect } from '../../src/tokens/bridge';
+import { bridgeColorToPaint, bridgeCubicBezier, bridgeDimensionToNumber, bridgeDuration, bridgeFontWeight, bridgeShadowToEffect, bridgeTokenToCanvas } from '../../src/tokens/bridge';
 import type { ResolvedToken } from '../../src/types/tokens';
 
 function makeToken(type: string, resolvedValue: unknown): ResolvedToken {
@@ -56,5 +56,65 @@ describe('bridgeFontWeight', () => {
 
   it('passes through numbers', () => {
     expect(bridgeFontWeight(makeToken('fontWeight', 400))).toBe(400);
+  });
+});
+
+describe('bridgeDuration', () => {
+  it('returns a valid ms duration string', () => {
+    expect(bridgeDuration(makeToken('duration', '150ms'))).toBe('150ms');
+  });
+
+  it('returns a valid seconds duration string', () => {
+    expect(bridgeDuration(makeToken('duration', '0.5s'))).toBe('0.5s');
+  });
+
+  it('returns "0ms" for zero duration', () => {
+    expect(bridgeDuration(makeToken('duration', '0ms'))).toBe('0ms');
+  });
+
+  it('returns null for non-string values', () => {
+    expect(bridgeDuration(makeToken('duration', 150))).toBeNull();
+  });
+
+  it('returns null for string without a valid unit', () => {
+    expect(bridgeDuration(makeToken('duration', '150'))).toBeNull();
+  });
+});
+
+describe('bridgeCubicBezier', () => {
+  it('returns a 4-number array for a valid easing', () => {
+    const result = bridgeCubicBezier(makeToken('cubicBezier', [0.4, 0, 0.2, 1]));
+    expect(result).toEqual([0.4, 0, 0.2, 1]);
+  });
+
+  it('returns the array for spring easing with overshoot', () => {
+    const result = bridgeCubicBezier(makeToken('cubicBezier', [0.175, 0.885, 0.32, 1.275]));
+    expect(result).toEqual([0.175, 0.885, 0.32, 1.275]);
+  });
+
+  it('returns null for a non-array value', () => {
+    expect(bridgeCubicBezier(makeToken('cubicBezier', '0.4, 0, 0.2, 1'))).toBeNull();
+  });
+
+  it('returns null for wrong-length array', () => {
+    expect(bridgeCubicBezier(makeToken('cubicBezier', [0.4, 0, 0.2]))).toBeNull();
+  });
+
+  it('returns null for array with non-numeric values', () => {
+    expect(bridgeCubicBezier(makeToken('cubicBezier', [0.4, 0, 'ease', 1]))).toBeNull();
+  });
+});
+
+describe('bridgeTokenToCanvas', () => {
+  it('dispatches duration tokens to bridgeDuration', () => {
+    expect(bridgeTokenToCanvas(makeToken('duration', '250ms'))).toBe('250ms');
+  });
+
+  it('dispatches cubicBezier tokens to bridgeCubicBezier', () => {
+    expect(bridgeTokenToCanvas(makeToken('cubicBezier', [0, 0, 0.2, 1]))).toEqual([0, 0, 0.2, 1]);
+  });
+
+  it('returns null for unknown types', () => {
+    expect(bridgeTokenToCanvas(makeToken('gradient', {}))).toBeNull();
   });
 });

@@ -9,6 +9,7 @@ import type { Content } from "vanilla-jsoneditor";
 import VanillaJSONEditor from "../json/VanillaJSONEditor";
 import AddTokenDialog from "../tokens/AddTokenDialog";
 import ColorTokenEditor from "../tokens/ColorTokenEditor";
+import MotionTokenEditor from "../tokens/MotionTokenEditor";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
@@ -289,15 +290,35 @@ const TokenCategoryDetailView = ({
                       className="border-b border-studio-border last:border-0 hover:bg-studio-bg-secondary"
                     >
                       <td className="px-4 py-2">
-                        {token.type === "color" &&
-                        typeof token.resolvedValue === "string" ? (
-                          <ColorTokenEditor
-                            token={token}
-                            onUpdateToken={(path, value) =>
-                              onUpdateToken(path, value, token.filePath)
-                            }
-                          />
-                        ) : null}
+                        {(() => {
+                          if (
+                            token.type === "color" &&
+                            typeof token.resolvedValue === "string"
+                          ) {
+                            return (
+                              <ColorTokenEditor
+                                token={token}
+                                onUpdateToken={(path, value) =>
+                                  onUpdateToken(path, value, token.filePath)
+                                }
+                              />
+                            );
+                          }
+                          if (
+                            token.type === "duration" ||
+                            token.type === "cubicBezier"
+                          ) {
+                            return (
+                              <MotionTokenEditor
+                                token={token}
+                                onUpdateToken={(path, value) =>
+                                  onUpdateToken(path, value, token.filePath)
+                                }
+                              />
+                            );
+                          }
+                          return null;
+                        })()}
                       </td>
                       <td className="px-4 py-2 font-mono text-xs text-studio-text">
                         {token.path}
