@@ -69,9 +69,15 @@ describe('Producer E2E', () => {
 
     expect(baseCSS).toContain('--duration-fast');
     expect(baseCSS).toContain('--duration-normal');
+    expect(baseCSS).toContain('--delay-short');
     expect(baseCSS).toContain('--easing-default');
+    expect(baseCSS).toContain('--easing-step-coarse');
+    expect(baseCSS).toContain('--easing-multi-stop-smooth');
     // cubicBezier values must be emitted as CSS functions, not raw arrays
     expect(baseCSS).toContain('cubic-bezier(');
+    expect(baseCSS).toContain('steps(4, end)');
+    expect(baseCSS).toContain('linear(');
+    expect(baseCSS).not.toContain('--easing-bounce');
     expect(baseCSS).not.toMatch(/--easing-\w+:\s*[\d.,\s]+;/);
   });
 
@@ -92,9 +98,10 @@ describe('Producer E2E', () => {
     expect(reducedCSS).toContain('@media (prefers-reduced-motion: reduce)');
     expect(reducedCSS).toContain('--duration-fast: 0ms');
     expect(reducedCSS).toContain('--duration-normal: 0ms');
+    expect(reducedCSS).toContain('--delay-short: 0ms');
   });
 
-  it('generate maps duration and easing tokens to Tailwind theme keys', async () => {
+  it('generate maps duration, delay, and easing tokens to Tailwind theme keys', async () => {
     execSync(`node ${cliBin} init --producer`, { cwd: tempDir, stdio: 'pipe' });
     execSync(`node ${cliBin} generate`, { cwd: tempDir, stdio: 'pipe' });
 
@@ -104,9 +111,12 @@ describe('Producer E2E', () => {
     );
 
     expect(tailwindBase).toContain('transitionDuration');
+    expect(tailwindBase).toContain('transitionDelay');
     expect(tailwindBase).toContain('transitionTimingFunction');
     expect(tailwindBase).toContain('var(--duration-fast)');
+    expect(tailwindBase).toContain('var(--delay-short)');
     expect(tailwindBase).toContain('var(--easing-default)');
+    expect(tailwindBase).toContain('var(--easing-step-coarse)');
   });
 
   it('init --producer scaffolds motion token template', async () => {
@@ -125,10 +135,15 @@ describe('Producer E2E', () => {
     );
 
     expect(motionTokens).toHaveProperty('duration');
+    expect(motionTokens).toHaveProperty('delay');
     expect(motionTokens).toHaveProperty('easing');
     expect(motionTokens).toHaveProperty('motion');
     expect(motionTokens.duration.fast.$type).toBe('duration');
+    expect(motionTokens.delay.short.$type).toBe('duration');
     expect(motionTokens.easing.default.$type).toBe('cubicBezier');
+    expect(motionTokens.easing.stepCoarse.$type).toBe('string');
+    expect(motionTokens.easing.multiStopSmooth.$type).toBe('string');
+    expect(motionTokens.easing).not.toHaveProperty('bounce');
     expect(Array.isArray(motionTokens.easing.default.$value)).toBe(true);
   });
 

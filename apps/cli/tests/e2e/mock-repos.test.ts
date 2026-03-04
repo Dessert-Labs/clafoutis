@@ -70,12 +70,19 @@ describe('E2E: mock-design-system → mock-frontend', () => {
     expect(baseCss).toContain('--colors-button-primary-bg');
     // Motion tokens
     expect(baseCss).toContain('--duration-fast');
+    expect(baseCss).toContain('--delay-short');
     expect(baseCss).toContain('--easing-default');
+    expect(baseCss).toContain('--easing-step-coarse');
+    expect(baseCss).toContain('--easing-multi-stop-smooth');
     expect(baseCss).toContain('cubic-bezier(');
+    expect(baseCss).toContain('steps(4, end)');
+    expect(baseCss).toContain('linear(');
+    expect(baseCss).not.toContain('--easing-bounce');
     // Tailwind config
     expect(tailwindTokens).toContain('darkMode');
     expect(tailwindTokens).toContain('colors');
     expect(tailwindTokens).toContain('transitionDuration');
+    expect(tailwindTokens).toContain('transitionDelay');
     expect(tailwindTokens).toContain('transitionTimingFunction');
   });
 
@@ -108,6 +115,7 @@ describe('E2E: mock-design-system → mock-frontend', () => {
 
     expect(reducedCSS).toContain('@media (prefers-reduced-motion: reduce)');
     expect(reducedCSS).toContain('--duration-fast: 0ms');
+    expect(reducedCSS).toContain('--delay-short: 0ms');
   });
 
   it(`respects version pinning (${PINNED_VERSION})`, async () => {
