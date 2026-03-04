@@ -153,7 +153,7 @@ export function TokenCategoryDetail() {
       typography: ["fontFamily", "fontWeight", "fontStyle", "typography"],
       dimensions: ["dimension", "number"],
       shadows: ["shadow"],
-      motion: ["duration", "cubicBezier"],
+      motion: ["duration", "cubicBezier", "string"],
     };
 
     const types = categoryMap[category];

@@ -185,13 +185,23 @@ const MOTION_TOKENS = {
     deliberate: { $type: "duration", $value: "700ms" },
     leisurely: { $type: "duration", $value: "1000ms" },
   },
+  delay: {
+    none: { $type: "duration", $value: "0ms" },
+    short: { $type: "duration", $value: "50ms" },
+    normal: { $type: "duration", $value: "100ms" },
+    long: { $type: "duration", $value: "200ms" },
+  },
   easing: {
     linear: { $type: "cubicBezier", $value: [0, 0, 1, 1] },
     default: { $type: "cubicBezier", $value: [0.4, 0, 0.2, 1] },
     in: { $type: "cubicBezier", $value: [0.4, 0, 1, 1] },
     out: { $type: "cubicBezier", $value: [0, 0, 0.2, 1] },
     spring: { $type: "cubicBezier", $value: [0.175, 0.885, 0.32, 1.275] },
-    bounce: { $type: "cubicBezier", $value: [0.34, 1.56, 0.64, 1] },
+    stepCoarse: { $type: "string", $value: "steps(4, end)" },
+    multiStopSmooth: {
+      $type: "string",
+      $value: "linear(0, 0.08 12%, 0.32 38%, 0.68 62%, 0.92 88%, 1)",
+    },
   },
   motion: {
     micro: {
@@ -263,6 +273,10 @@ describe("motion token generation", () => {
     expect(baseCSS).toContain("cubic-bezier(0, 0, 1, 1)"); // linear
     expect(baseCSS).toContain("cubic-bezier(0.4, 0, 0.2, 1)"); // default
     expect(baseCSS).toContain("cubic-bezier(0.175, 0.885, 0.32, 1.275)"); // spring
+    expect(baseCSS).toContain("--easing-step-coarse: steps(4, end)");
+    expect(baseCSS).toContain(
+      "--easing-multi-stop-smooth: linear(0, 0.08 12%, 0.32 38%, 0.68 62%, 0.92 88%, 1)",
+    );
   });
 
   it("does NOT output raw array syntax for cubicBezier tokens", async () => {
@@ -293,6 +307,8 @@ describe("motion token generation", () => {
     expect(reducedCSS).toContain("--duration-fast: 0ms");
     expect(reducedCSS).toContain("--duration-normal: 0ms");
     expect(reducedCSS).toContain("--duration-none: 0ms");
+    expect(reducedCSS).toContain("--delay-short: 0ms");
+    expect(reducedCSS).toContain("--delay-normal: 0ms");
   });
 
   it("imports motion-reduced.css from index.css", async () => {
@@ -336,6 +352,22 @@ describe("motion token generation", () => {
     expect(tailwindBase).toContain("transitionTimingFunction");
     expect(tailwindBase).toContain("var(--easing-default)");
     expect(tailwindBase).toContain("var(--easing-spring)");
+    expect(tailwindBase).toContain("var(--easing-step-coarse)");
+  });
+
+  it("maps delay tokens to transitionDelay in tailwind.base.js", async () => {
+    const workDir = makeTmpDir();
+    seedMotionTokens(workDir);
+    await generate(workDir);
+
+    const tailwindBase = fs.readFileSync(
+      path.join(workDir, "build", "tailwind", "tailwind.base.js"),
+      "utf-8",
+    );
+
+    expect(tailwindBase).toContain("transitionDelay");
+    expect(tailwindBase).toContain("var(--delay-short)");
+    expect(tailwindBase).toContain("var(--delay-normal)");
   });
 
   it("resolves semantic motion references in base.css", async () => {

@@ -70,6 +70,10 @@ function validateCubicBezier(value: unknown): boolean {
   return value.every((v) => typeof v === "number" && isFinite(v));
 }
 
+function validateString(value: unknown): boolean {
+  return typeof value === "string";
+}
+
 /** Validates all tokens in the given file set and returns any issues found. */
 export function validateTokens(
   tokenFiles: Map<string, DTCGTokenFile>,
@@ -164,6 +168,17 @@ export function validateTokens(
             path,
             severity: "error",
             message: `Invalid cubicBezier value: must be an array of exactly 4 numbers`,
+            code: "INVALID_VALUE",
+          });
+        }
+        break;
+
+      case "string":
+        if (!validateString(token.$value)) {
+          results.push({
+            path,
+            severity: "error",
+            message: `Invalid string value: "${String(token.$value)}"`,
             code: "INVALID_VALUE",
           });
         }

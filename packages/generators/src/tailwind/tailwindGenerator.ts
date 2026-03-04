@@ -317,6 +317,7 @@ StyleDictionary.registerFormat({
     // Tokens not listed here fall through to a direct path mapping.
     const TAILWIND_KEY_MAP: Record<string, string> = {
       duration: "transitionDuration",
+      delay: "transitionDelay",
       easing: "transitionTimingFunction",
     };
 

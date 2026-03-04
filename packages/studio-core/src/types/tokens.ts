@@ -5,6 +5,7 @@ export type DTCGTokenType =
   | "fontWeight"
   | "duration"
   | "cubicBezier"
+  | "string"
   | "number"
   | "strokeStyle"
   | "border"

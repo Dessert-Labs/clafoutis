@@ -11,6 +11,7 @@ import { ColorPalettePreview } from "../preview/ColorPalettePreview";
 import { DialogPreview } from "../preview/DialogPreview";
 import { DropdownPreview } from "../preview/DropdownPreview";
 import { FormPreview } from "../preview/FormPreview";
+import { MotionPreview } from "../preview/MotionPreview";
 import { PaginationPreview } from "../preview/PaginationPreview";
 import { ProgressPreview } from "../preview/ProgressPreview";
 import { SkeletonPreview } from "../preview/SkeletonPreview";
@@ -84,6 +85,10 @@ const navCategories: NavCategory[] = [
       { id: "tabs", label: "Tabs" },
       { id: "pagination", label: "Pagination" },
     ],
+  },
+  {
+    label: "Motion",
+    items: [{ id: "motion", label: "Motion" }],
   },
 ];
 
@@ -216,6 +221,8 @@ const ComponentsPreviewView = ({
             onPageChange={setCurrentPage}
           />
         );
+      case "motion":
+        return <MotionPreview />;
       default:
         return null;
     }

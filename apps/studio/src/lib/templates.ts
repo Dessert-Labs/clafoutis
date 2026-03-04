@@ -125,6 +125,28 @@ const minimalMotion: DTCGTokenFile = {
       $description: "Background/ambient motion (skeleton shimmer)",
     },
   },
+  delay: {
+    none: {
+      $type: "duration",
+      $value: "0ms",
+      $description: "No delay before animation starts",
+    },
+    short: {
+      $type: "duration",
+      $value: "50ms",
+      $description: "Tight stagger between nearby elements",
+    },
+    normal: {
+      $type: "duration",
+      $value: "100ms",
+      $description: "Default stagger for lists and grids",
+    },
+    long: {
+      $type: "duration",
+      $value: "200ms",
+      $description: "Pronounced cascade for larger entrances",
+    },
+  },
   easing: {
     linear: {
       $type: "cubicBezier",
@@ -154,12 +176,8 @@ const minimalMotion: DTCGTokenFile = {
     spring: {
       $type: "cubicBezier",
       $value: [0.175, 0.885, 0.32, 1.275],
-      $description: "Overshoot bounce — buttons, toasts, playful UI",
-    },
-    bounce: {
-      $type: "cubicBezier",
-      $value: [0.34, 1.56, 0.64, 1],
-      $description: "Strong overshoot — attention-grabbing entrances",
+      $description:
+        "Gentle overshoot then settle — buttons, toasts, playful UI",
     },
     snappy: {
       $type: "cubicBezier",
@@ -175,6 +193,36 @@ const minimalMotion: DTCGTokenFile = {
       $type: "cubicBezier",
       $value: [0.16, 1, 0.3, 1],
       $description: "Dramatic deceleration — hero sections, modals",
+    },
+    stepStart: {
+      $type: "string",
+      $value: "steps(1, start)",
+      $description: "Immediate discrete jump — counters and tickers",
+    },
+    stepEnd: {
+      $type: "string",
+      $value: "steps(1, end)",
+      $description: "Deferred discrete jump at end — reveal gates",
+    },
+    stepCoarse: {
+      $type: "string",
+      $value: "steps(4, end)",
+      $description: "Chunky stepped motion — segmented progress",
+    },
+    stepFine: {
+      $type: "string",
+      $value: "steps(12, end)",
+      $description: "High-resolution stepped motion — sprite-like frames",
+    },
+    multiStopSmooth: {
+      $type: "string",
+      $value: "linear(0, 0.08 12%, 0.32 38%, 0.68 62%, 0.92 88%, 1)",
+      $description: "Multi-stop easing for custom pacing beyond cubic-bezier",
+    },
+    multiStopRebound: {
+      $type: "string",
+      $value: "linear(0, 0.06, 0.24, 0.56, 0.94, 1.06 70%, 0.98 82%, 1)",
+      $description: "Single rebound-like settle using linear() stop points",
     },
   },
   motion: {
@@ -260,6 +308,23 @@ const minimalMotion: DTCGTokenFile = {
         $type: "cubicBezier",
         $value: "{easing.linear}",
         $description: "Constant speed for loading indicators",
+      },
+    },
+    stagger: {
+      tight: {
+        $type: "duration",
+        $value: "{delay.short}",
+        $description: "Fast cascade for compact groups",
+      },
+      normal: {
+        $type: "duration",
+        $value: "{delay.normal}",
+        $description: "Default cascade spacing for list entrances",
+      },
+      dramatic: {
+        $type: "duration",
+        $value: "{delay.long}",
+        $description: "Larger cascade spacing for hero sequences",
       },
     },
   },
